@@ -6,6 +6,8 @@ import re
 import textwrap
 import unittest
 
+import yaml
+
 from .helpers import render_chart, resource, resources_of_kind
 
 DISABLE_OPTIONAL_CAPABILITIES = (
@@ -40,6 +42,30 @@ def agent_capabilities(config: str) -> list[str]:
 
 class SharedConfigTests(unittest.TestCase):
     """Keep generated agent, reasoning, and MCP settings aligned."""
+
+    def test_mcp_uses_login_token_and_chat_only_session_header(self) -> None:
+        names = ("brave", "context7", "github")
+        args = ["--set", "mcp.enabled=true"]
+        for name in names:
+            args.extend(("--set", f"mcp.catalog.presets.{name}.enabled=true"))
+        config = yaml.safe_load(render_librechat_config(*args))
+        self.assertEqual(set(config["mcpServers"]), set(names))
+        for name, server in config["mcpServers"].items():
+            with self.subTest(server=name):
+                self.assertIs(server["requiresOAuth"], False)
+                self.assertNotIn("oauth", server)
+                self.assertEqual(server["headers"], {
+                    "Authorization": "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}",
+                })
+                self.assertEqual(server["requestHeaders"], {
+                    "X-Session-ID": "{{LIBRECHAT_BODY_CONVERSATIONID}}",
+                })
+        disabled = yaml.safe_load(render_librechat_config(
+            *args, "--set", "mcp.catalog.presets.brave.enabled=false",
+        ))
+        self.assertEqual(set(disabled["mcpServers"]), {"context7", "github"})
+        disabled = yaml.safe_load(render_librechat_config(*args, "--set", "mcp.enabled=false"))
+        self.assertNotIn("mcpServers", disabled)
 
     def test_speech_disabled_has_no_config_or_credentials(self) -> None:
         args = ("--set", "frontendLibrechat.speech.stt.auth.enabled=true",
