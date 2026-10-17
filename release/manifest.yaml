@@ -3,7 +3,7 @@ kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.0
+  version: 0.1.1
   status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
@@ -18,7 +18,7 @@ spec:
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
     base: 0.3.26
-    tooling: 0.11.0
+    tooling: 0.11.1
     stackSetup: 0.4.2
     baseCharts:
       - charts/postgres/documentdb-addon
