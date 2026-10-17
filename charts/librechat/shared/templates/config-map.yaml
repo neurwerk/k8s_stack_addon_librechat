@@ -215,15 +215,10 @@ data:
       {{ . }}:
         type: streamable-http
         url: {{ printf "%s/bindings/mcp-%s/mcp" $.Values.frontendLibrechat.agentGateway.origin . | quote }}
-        requiresOAuth: true
+        requiresOAuth: false
         headers:
+          Authorization: {{ printf "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}" | quote }}
+        requestHeaders:
           X-Session-ID: {{ printf "{{LIBRECHAT_BODY_CONVERSATIONID}}" | quote }}
-        oauth:
-          client_id: "${OPENID_CLIENT_ID}"
-          client_secret: "${OPENID_CLIENT_SECRET}"
-          authorization_url: {{ printf "https://%s/realms/%s/protocol/openid-connect/auth" $.Values.authKeycloak.hostname $.Values.authKeycloak.realm | quote }}
-          token_url: {{ printf "https://%s/realms/%s/protocol/openid-connect/token" $.Values.authKeycloak.hostname $.Values.authKeycloak.realm | quote }}
-          redirect_uri: {{ printf "https://%s/api/mcp/%s/oauth/callback" $.Values.frontendLibrechat.hostname . | quote }}
-          scope: openid
       {{- end }}
     {{- end }}
