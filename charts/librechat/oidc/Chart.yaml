@@ -1,0 +1,5 @@
+apiVersion: v2
+name: librechat-oidc-settings
+description: LibreChat authentication requirements for the shared addon OIDC chart
+type: application
+version: 3.0.0

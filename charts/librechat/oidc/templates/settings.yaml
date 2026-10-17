@@ -1,0 +1,44 @@
+{{- $hostname := required "frontendLibrechat.hostname is required" .Values.frontendLibrechat.hostname -}}
+{{- $adminHostname := required "frontendLibrechat.adminPanel.hostname is required" .Values.frontendLibrechat.adminPanel.hostname -}}
+{{- range list $hostname $adminHostname -}}
+{{- if or (eq . "place.holder") (hasSuffix ".place.holder" .) (not (regexMatch `^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$` .)) -}}
+{{- fail "LibreChat OIDC requires exact public hostnames" -}}
+{{- end -}}
+{{- end -}}
+{{- $expected := dict
+  "librechatRedirectUri" (printf "https://%s/oauth/openid/callback" $hostname)
+  "librechatAdminRedirectUri" (printf "https://%s/api/admin/oauth/openid/callback" $hostname)
+  "librechatWebOrigin" (printf "https://%s" $hostname)
+  "librechatAdminWebOrigin" (printf "https://%s" $adminHostname) -}}
+{{- range $key, $value := $expected -}}
+{{- $configured := get $.Values.authKeycloak $key -}}
+{{- if and $configured (ne $configured $value) -}}{{ fail (printf "authKeycloak.%s must match the application callback or origin" $key) }}{{- end -}}
+{{- end -}}
+{{- $redirectUris := list $expected.librechatRedirectUri $expected.librechatAdminRedirectUri -}}
+{{- $webOrigins := list $expected.librechatWebOrigin $expected.librechatAdminWebOrigin -}}
+{{- if .Values.mcp.enabled -}}
+{{- range include "librechat-oidc.mcpNames" . | fromYamlArray -}}
+{{- $redirectUris = append $redirectUris (printf "https://%s/api/mcp/%s/oauth/callback" $hostname .) -}}
+{{- end -}}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: librechat-oidc-settings
+  namespace: {{ .Release.Namespace }}
+  labels:
+    reconcile.fluxcd.io/watch: Enabled
+data:
+  values.yaml: |
+    enabled: true
+    authentication:
+      clientId: {{ .Values.authKeycloak.librechatClientId | quote }}
+      redirectUris: {{ $redirectUris | uniq | toJson }}
+      webOrigins: {{ $webOrigins | uniq | toJson }}
+      realmRoles: [librechat-user, librechat-admin]
+      roleClaim: realm_access.roles
+      audiences: [agentgateway]
+      refreshTokenRotation: true
+      mode: login+gateway
+      userTokenForwarding: true
+      gatewayPermissions: {{ .Values.authKeycloak.agentgatewayClientRoles | default list | toJson }}

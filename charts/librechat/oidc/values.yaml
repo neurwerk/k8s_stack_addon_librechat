@@ -1,0 +1,19 @@
+# Authentication settings only; Base's addon-oidc chart owns reconciliation.
+authKeycloak:
+  librechatClientId: librechat
+  # Client-owned callback and origin allowlists.
+  librechatRedirectUri: ""
+  librechatWebOrigin: ""
+  librechatAdminRedirectUri: ""
+  librechatAdminWebOrigin: ""
+
+mcp:
+  enabled: false
+  catalog:
+    presets: {}
+    custom: []
+
+frontendLibrechat:
+  hostname: ""
+  adminPanel:
+    hostname: ""

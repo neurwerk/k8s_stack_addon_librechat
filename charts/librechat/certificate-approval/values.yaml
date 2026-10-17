@@ -1,0 +1,5 @@
+frontendLibrechat:
+  enabled: false
+  hostname: ""
+  adminPanel:
+    hostname: ""

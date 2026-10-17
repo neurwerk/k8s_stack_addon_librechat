@@ -1,0 +1,56 @@
+apiVersion: addons.neurwerk.com/v1alpha1
+kind: AddonRelease
+metadata:
+  name: librechat
+spec:
+  version: 0.1.0
+  status: ready
+  sourceName: librechat-addon
+  configurationKey: frontendLibrechat
+  inputs:
+    - {kind: ConfigMap, namespace: auth-keycloak, name: auth-keycloak-app-defaults, owner: base}
+    - {kind: ConfigMap, namespace: auth-keycloak, name: client-values, owner: client}
+    - {kind: ConfigMap, namespace: auth-keycloak, name: keycloak-product-values, owner: client}
+    - {kind: ConfigMap, namespace: auth-keycloak, name: librechat-oidc-approval-values, owner: client}
+    - {kind: ConfigMap, namespace: frontend-librechat, name: client-values, owner: client}
+    - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-product-values, owner: client}
+    - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-agentgateway-model-values, owner: client}
+    - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
+  prerequisites:
+    base: 0.3.26
+    tooling: 0.11.0
+    stackSetup: 0.4.2
+    baseCharts:
+      - charts/postgres/documentdb-addon
+      - charts/keycloak/addon-access
+      - charts/keycloak/addon-oidc
+  packages:
+    - name: namespaces
+      path: releases/namespaces/librechat
+    - name: secret-sync
+      path: releases/librechat/secret-sync
+      dependsOn: [namespaces]
+    - name: database
+      path: releases/librechat/database
+      dependsOn: [secret-sync]
+    - name: access
+      path: releases/librechat/access
+      dependsOn: [secret-sync]
+    - name: oidc
+      path: releases/librechat/oidc
+      dependsOn: [access, secret-sync]
+      helmOutputs:
+        - kind: ConfigMap
+          namespace: auth-keycloak
+          name: librechat-oidc-settings
+          helmRelease: librechat-oidc-settings
+    - name: certificate-approval
+      path: releases/librechat/certificate-approval
+      dependsOn: [namespaces]
+    - name: app
+      path: releases/librechat/app
+      dependsOn: [database, oidc, certificate-approval]
+  retention:
+    databases: retain
+    volumes: retain
+    credentials: retain
