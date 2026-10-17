@@ -1,0 +1,39 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: keycloak-librechat-oidc
+  namespace: auth-keycloak
+spec:
+  releaseName: auth-keycloak-librechat-oidc
+  interval: 5m
+  timeout: 15m
+  dependsOn:
+    - name: librechat-oidc-settings
+    - name: keycloak-librechat-access
+    - name: keycloak-agentgateway-oidc
+  install:
+    strategy: {name: RetryOnFailure, retryInterval: 1m}
+  upgrade:
+    strategy: {name: RetryOnFailure, retryInterval: 1m}
+  chart:
+    spec:
+      chart: ./charts/keycloak/addon-oidc
+      sourceRef:
+        kind: GitRepository
+        name: k8s-stack
+        namespace: flux-system
+  valuesFrom:
+    - kind: ConfigMap
+      name: auth-keycloak-app-defaults
+    - kind: ConfigMap
+      name: librechat-oidc-settings
+    - kind: ConfigMap
+      name: client-values
+    - kind: ConfigMap
+      name: keycloak-product-values
+    - kind: ConfigMap
+      name: librechat-oidc-approval-values
+  values:
+    clientSecret:
+      name: librechat-oidc-secret
+      key: clientSecret

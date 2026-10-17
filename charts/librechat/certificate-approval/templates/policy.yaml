@@ -1,0 +1,63 @@
+{{- if .Values.frontendLibrechat.enabled }}
+{{- range $policy := list (dict "name" "librechat" "hostname" .Values.frontendLibrechat.hostname) (dict "name" "librechat-admin" "hostname" .Values.frontendLibrechat.adminPanel.hostname) }}
+{{- $hostname := required "LibreChat application and admin hostnames are required" $policy.hostname | trim -}}
+{{- if or (eq $hostname "place.holder") (hasSuffix ".place.holder" $hostname) (not (regexMatch `^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$` $hostname)) -}}
+{{- fail "LibreChat certificate approval requires exact public hostnames" -}}
+{{- end }}
+{{- range $issuer := list (dict "suffix" "staging" "name" "letsencrypt-staging-cluster-issuer") (dict "suffix" "production" "name" "letsencrypt-production-cluster-issuer") }}
+---
+apiVersion: policy.cert-manager.io/v1alpha1
+kind: CertificateRequestPolicy
+metadata:
+  name: cert-manager-public-{{ $policy.name }}-{{ $issuer.suffix }}
+spec:
+  allowed:
+    dnsNames:
+      values: [{{ $hostname | quote }}]
+      required: true
+    isCA: false
+    usages: [digital signature, key encipherment]
+  constraints:
+    minDuration: 2160h
+    maxDuration: 2160h
+    privateKey:
+      algorithm: RSA
+      minSize: 2048
+      maxSize: 2048
+  selector:
+    issuerRef:
+      group: cert-manager.io
+      kind: ClusterIssuer
+      name: {{ $issuer.name | quote }}
+    namespace:
+      matchNames: [frontend-librechat]
+{{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-public-librechat-use
+rules:
+  - apiGroups: [policy.cert-manager.io]
+    resources: [certificaterequestpolicies]
+    verbs: [use]
+    resourceNames:
+      - cert-manager-public-librechat-staging
+      - cert-manager-public-librechat-production
+      - cert-manager-public-librechat-admin-staging
+      - cert-manager-public-librechat-admin-production
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-public-librechat-use
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-public-librechat-use
+subjects:
+  - kind: ServiceAccount
+    name: infra-cert-manager-controller
+    namespace: infra-cert-manager
+{{- end }}

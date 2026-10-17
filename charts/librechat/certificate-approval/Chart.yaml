@@ -1,0 +1,5 @@
+apiVersion: v2
+name: librechat-certificate-approval
+description: Exact certificate approval for LibreChat and its admin panel
+type: application
+version: 1.0.0

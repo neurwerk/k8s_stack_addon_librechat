@@ -1,0 +1,11 @@
+[project]
+name = "k8s-stack-addon-librechat-validation"
+version = "0.0.0"
+description = "Offline validation for the LibreChat addon"
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0,<7",
+]
+
+[tool.uv]
+package = false
