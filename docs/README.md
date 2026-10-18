@@ -5,6 +5,7 @@ LibreChat, its admin panel, Meilisearch, and Valkey use Base's identity, gateway
 - [Configuration](configuration.md)
 - [Release contract](../release/manifest.yaml)
 - [Provenance](provenance.md)
+- [Release and crossover](operations/release-and-crossover.md)
 
 Clients select an exact addon revision and enable its namespace, secret, database, access, OIDC, certificate, and application stages.
 RAG and code interpreter sources are retained but excluded from installation.
@@ -17,4 +18,4 @@ Clients explicitly approve the OIDC scopes and exact AgentGateway binding IDs. U
 
 ## Crossover
 
-Stop the old installation before starting these stages and remove conflicting product-owned resources. Existing product data may be discarded only with the operator's approval; shared PostgreSQL, storage, identity and OpenBao services remain in place. Fresh installations and later removal retain databases, volumes and credentials by default.
+Follow the [release and crossover procedure](operations/release-and-crossover.md) before replacing a Base-owned installation. Fresh installations and later removal retain databases, volumes and credentials by default.

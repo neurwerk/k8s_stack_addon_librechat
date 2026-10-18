@@ -17,9 +17,9 @@ spec:
     - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-agentgateway-model-values, owner: client}
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
-    base: 0.3.26
-    tooling: 0.11.1
-    stackSetup: 0.4.2
+    base: 0.3.27
+    tooling: 0.11.2
+    stackSetup: 0.4.3
     baseCharts:
       - charts/postgres/documentdb-addon
       - charts/keycloak/addon-access

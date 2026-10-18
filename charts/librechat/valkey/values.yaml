@@ -1,6 +1,6 @@
 frontendLibrechat:
   valkey:
-    image: docker.io/valkey/valkey:9.1.1-alpine
+    image: docker.io/valkey/valkey:9.1.1-alpine@sha256:15568b9cb7eb67f4aed4de018c23f13d344e0e6437b31fe8fb8823dc81ebb3a9
     imagePullPolicy: IfNotPresent
     replicas: 1
     service:
