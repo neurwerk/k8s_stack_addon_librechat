@@ -15,7 +15,7 @@ frontendLibrechat:
 
     image:
       repository: ghcr.io/clickhouse/librechat-admin-panel
-      tag: "1.0.0"
+      tag: "1.0.0@sha256:f889fb4fcec19ef90203cce11d66e8f34223d512957666a6a7c8967efb22a2de"
       pullPolicy: IfNotPresent
     imagePullSecrets: []
 
