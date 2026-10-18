@@ -7,12 +7,6 @@ authKeycloak:
   librechatAdminRedirectUri: ""
   librechatAdminWebOrigin: ""
 
-mcp:
-  enabled: false
-  catalog:
-    presets: {}
-    custom: []
-
 frontendLibrechat:
   hostname: ""
   adminPanel:
