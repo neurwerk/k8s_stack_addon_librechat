@@ -195,6 +195,7 @@ data:
             includeReasoningContent: false
             includeReasoningHistory: false
           addParams:
+            promptCache: false
             reasoning_effort: none
             disableStreaming: {{ not $.Values.frontendLibrechat.agentGateway.streaming }}
           headers:
