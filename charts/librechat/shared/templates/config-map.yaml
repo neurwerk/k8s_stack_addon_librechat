@@ -6,6 +6,10 @@
 {{- $costTokenConfig := include "librechat.costTokenConfig" (dict "root" . "catalog" $modelCatalog) | fromYaml -}}
 {{- $speech := include "librechat.speechEndpoints" . | fromYaml -}}
 {{- $memory := .Values.frontendLibrechat.memory -}}
+{{- $subagents := .Values.frontendLibrechat.subagents -}}
+{{- if not (kindIs "bool" $subagents.enabled) }}{{ fail "frontendLibrechat.subagents.enabled must be boolean" }}{{ end -}}
+{{- if not (kindIs "bool" $subagents.fileSharing.enabled) }}{{ fail "frontendLibrechat.subagents.fileSharing.enabled must be boolean" }}{{ end -}}
+{{- if and $subagents.fileSharing.enabled (not $subagents.enabled) }}{{ fail "frontendLibrechat.subagents.fileSharing.enabled requires frontendLibrechat.subagents.enabled" }}{{ end -}}
 {{- if not (kindIs "bool" $memory.enabled) }}{{ fail "frontendLibrechat.memory.enabled must be boolean" }}{{ end -}}
 {{- if $memory.enabled -}}
 {{- if not (kindIs "bool" $memory.agent.enabled) }}{{ fail "frontendLibrechat.memory.agent.enabled must be boolean" }}{{ end -}}
@@ -158,8 +162,11 @@ data:
       allowedAddresses:
         - {{ .Values.frontendLibrechat.agentGateway.hostPort | quote }}
       agents:
-        {{- if or .Values.mcp.enabled .Values.frontendLibrechat.codeInterpreter.enabled .Values.frontendLibrechat.rag.enabled }}
+        {{- if or $subagents.enabled .Values.mcp.enabled .Values.frontendLibrechat.codeInterpreter.enabled .Values.frontendLibrechat.rag.enabled }}
         capabilities:
+          {{- if $subagents.enabled }}
+          - subagents
+          {{- end }}
           {{- if .Values.mcp.enabled }}
           - tools
           {{- end }}
@@ -171,6 +178,14 @@ data:
           {{- end }}
         {{- else }}
         capabilities: []
+        {{- end }}
+        {{- if $subagents.fileSharing.enabled }}
+        fileSharing:
+          enabled: true
+          allowSiblingSharing: false
+          maxFiles: 100
+          maxPrivateBytes: 268435456
+          ttlMs: 3600000
         {{- end }}
       custom:
         {{- range $endpoint := $modelCatalog.endpoints }}

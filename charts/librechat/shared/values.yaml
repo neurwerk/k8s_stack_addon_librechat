@@ -1,5 +1,12 @@
 # Non-secret LibreChat product configuration.
 frontendLibrechat:
+  subagents:
+    # Expose foreground delegation; each saved parent must select its own children.
+    enabled: false
+    fileSharing:
+      # Current-message attachments only; each parent must also opt into shareFiles.
+      # Does not render PDFs or establish a local-only visual processing path.
+      enabled: false
   costs:
     # Approximate USD display using the client AgentGateway catalog's base rates.
     # Does not import gateway totals, pricing tiers, reroutes, or provider invoices.
