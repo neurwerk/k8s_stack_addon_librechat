@@ -231,7 +231,7 @@ data:
       {{- range $mcpNames }}
       {{ . }}:
         type: streamable-http
-        url: {{ printf "%s/bindings/mcp-%s/mcp" $.Values.frontendLibrechat.agentGateway.origin . | quote }}
+        url: {{ printf "%s/mcp/%s" $.Values.frontendLibrechat.agentGateway.origin . | quote }}
         requiresOAuth: false
         headers:
           Authorization: {{ printf "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}" | quote }}
