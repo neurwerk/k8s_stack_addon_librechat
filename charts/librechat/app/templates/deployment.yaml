@@ -259,6 +259,9 @@ spec:
               value: "true"
             - name: OPENID_USE_END_SESSION_ENDPOINT
               value: "true"
+            # Match the exact origin allowed by the scoped OIDC provisioning Job.
+            - name: OPENID_POST_LOGOUT_REDIRECT_URI
+              value: {{ printf "https://%s" .Values.frontendLibrechat.hostname | quote }}
             - name: ENDPOINTS
               value: custom,agents
             {{- if .Values.frontendLibrechat.rag.enabled }}
