@@ -1,12 +1,31 @@
 {{- $existing := lookup "apps/v1" "StatefulSet" .Release.Namespace "frontend-librechat-valkey-stateful-set" -}}
 {{- $claims := list -}}
 {{- if $existing -}}
+{{- $annotations := $existing.metadata.annotations | default dict -}}
+{{- $labels := $existing.metadata.labels | default dict -}}
+{{- if or (ne (get $annotations "meta.helm.sh/release-name") .Release.Name) (ne (get $annotations "meta.helm.sh/release-namespace") .Release.Namespace) (ne (get $labels "app.kubernetes.io/managed-by") .Release.Service) }}{{ fail "existing Valkey StatefulSet is not owned by this Helm release" }}{{ end -}}
+{{- if not (kindIs "map" $existing.spec) }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
 {{- $claims = $existing.spec.volumeClaimTemplates -}}
-{{- if or (ne (len $claims) 1) (ne (first $claims).metadata.name "frontend-librechat-valkey-data") }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
-{{- $spec := (first $claims).spec -}}
+{{- if not (kindIs "slice" $claims) }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
+{{- if ne (len $claims) 1 }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
+{{- $claim := first $claims -}}
+{{- if not (kindIs "map" $claim) }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
+{{- if not (kindIs "map" $claim.metadata) }}{{ fail "existing Valkey StatefulSet has unexpected claim metadata" }}{{ end -}}
+{{- if ne $claim.metadata.name "frontend-librechat-valkey-data" }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
+{{- $spec := $claim.spec -}}
+{{- if not (kindIs "map" $spec) }}{{ fail "existing Valkey claim has unexpected storage specification" }}{{ end -}}
+{{- range $field, $_ := $spec -}}
+{{- if not (has $field (list "accessModes" "volumeMode" "resources" "storageClassName")) }}{{ fail "existing Valkey claim has unsupported storage fields" }}{{ end -}}
+{{- end -}}
+{{- if ne (toJson $spec.accessModes) `["ReadWriteOnce"]` }}{{ fail "existing Valkey claim requires exactly ReadWriteOnce access" }}{{ end -}}
+{{- if ne ($spec.volumeMode | default "Filesystem") "Filesystem" }}{{ fail "existing Valkey claim requires Filesystem volume mode" }}{{ end -}}
+{{- if not (kindIs "map" $spec.resources) }}{{ fail "existing Valkey claim has unexpected storage resources" }}{{ end -}}
+{{- if or (ne (len $spec.resources) 1) (not (kindIs "map" $spec.resources.requests)) }}{{ fail "existing Valkey claim has unsupported storage resources" }}{{ end -}}
+{{- if or (ne (len $spec.resources.requests) 1) (not (hasKey $spec.resources.requests "storage")) }}{{ fail "existing Valkey claim requires only a storage request" }}{{ end -}}
 {{- $persistence := .Values.frontendLibrechat.valkey.persistence -}}
 {{- if ne (toString $spec.resources.requests.storage) (toString $persistence.size) }}{{ fail "Valkey claim template size is immutable; storage changes require a separately approved migration" }}{{ end -}}
 {{- if and $persistence.storageClassName (ne $spec.storageClassName $persistence.storageClassName) }}{{ fail "Valkey claim template storage class is immutable; storage changes require a separately approved migration" }}{{ end -}}
+{{- /* An unset requested class preserves the class chosen at installation, including the API default. */}}
 {{- end -}}
 apiVersion: apps/v1
 kind: StatefulSet
