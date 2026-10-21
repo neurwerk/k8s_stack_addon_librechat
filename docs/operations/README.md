@@ -9,9 +9,9 @@ The application releases read defaults, client values and `librechat-product-val
 | Setting/input | Purpose |
 | --- | --- |
 | `librechat-oidc-approval-values` | Client approval of browser OIDC scope and exact gateway bindings for Base's OIDC provisioning. |
-| `librechat-agentgateway-model-values` | Client-owned effective model bindings; model routes must match the Base gateway's actual `apiPath`. |
+| `librechat-agentgateway-model-values` | Client-owned grouped API providers; model routes must match the Base gateway's actual `routes.api.path`. |
 | `frontendLibrechat.agentGateway` | Internal origin/host allowance, primary binding, optional default model and streaming selection. |
-| `mcp.enabled`, `mcp.catalog` | Enabled gateway MCP routes; the renderer uses the standard `/bindings/mcp-<name>/mcp` prefix. |
+| `mcp-servers.enabled`, `mcp-servers.catalog` | Enabled gateway MCP routes; the renderer uses `/mcp/<canonical-server-id>`. |
 | `frontendLibrechat.objectStorage` | Optional bucket storage; the app requires a browser-reachable HTTPS endpoint and controller-owned bucket credentials. |
 | Memory, speech, attachments, delegation and cost display | Opt-in settings described in [configuration](../configuration.md). |
 

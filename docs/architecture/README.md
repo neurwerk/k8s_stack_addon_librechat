@@ -23,11 +23,11 @@ The [permission adapter](../../charts/librechat/app/files/provision-permissions.
 
 ## Model and MCP requests
 
-The [model helper](../../charts/librechat/shared/templates/_helpers.tpl) combines the selected OpenRouter catalog, client model definitions and explicit `aiGateway.bindings`. Every effective model must belong to exactly one enabled API binding with `openai-chat-completions-v1` and a `company` or `none` credential source. Catalog visibility does not authorize invocation.
+The [model helper](../../charts/librechat/shared/templates/_helpers.tpl) combines the selected OpenRouter catalog, client model definitions and explicit `self-hosted-api-providers` and `external-api-providers` entries. Every effective model must belong to exactly one enabled provider with `routes.api.enabled: true`, `openai-chat-completions-v1` and a `company` credential source or self-hosted `credentialSources: [none]`. Catalog visibility does not authorize invocation.
 
-The [generated LibreChat configuration](../../charts/librechat/shared/templates/config-map.yaml) forwards the user's OIDC access token as `Authorization: Bearer ...`. Model URLs use `<origin><binding.apiPath>/v1`, defaulting to `<origin>/bindings/<id>/v1` when `apiPath` is absent. A custom prefix replaces the default; it must match the effective Base gateway binding. `primaryBinding` names one endpoint `AgentGateway`; others use `AgentGateway-<id>`.
+The [generated LibreChat configuration](../../charts/librechat/shared/templates/config-map.yaml) forwards the user's OIDC access token as `Authorization: Bearer ...`. Model URLs use `<origin><routes.api.path>/v1`, defaulting to `<origin>/bindings/<id>/v1` when `routes.api.path` is absent. A custom prefix replaces the default; it must match the effective Base gateway binding. `primaryBinding` names one endpoint `AgentGateway`; others use `AgentGateway-<id>`.
 
-MCP selection comes from enabled `mcp.catalog.presets` and `.custom` entries. Only route names reach LibreChat, not native provider credentials. MCP URLs are constructed as `<origin>/bindings/mcp-<name>/mcp`; there is no corresponding custom-prefix input here. The same user token authorizes gateway requests. Gateway enforcement applies only to routed requests; optional server speech connects directly to its configured service.
+MCP selection comes from enabled `mcp-servers.catalog.presets` and `.custom` entries. Only route names reach LibreChat, not native provider credentials. MCP URLs are constructed as `<origin>/mcp/<canonical-server-id>`; there is no corresponding custom-prefix input here. The same user token authorizes gateway requests. Gateway enforcement applies only to routed requests; optional server speech connects directly to its configured service.
 
 ## Data and Secret delivery
 
