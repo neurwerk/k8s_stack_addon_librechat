@@ -9,6 +9,18 @@ from helm import ROOT, render, resource
 
 
 class CatalogOwnershipTests(unittest.TestCase):
+    def test_grouped_release_requires_exact_base_and_rejects_legacy_inputs(self):
+        manifest = yaml.safe_load((ROOT / "release/manifest.yaml").read_text())
+        self.assertEqual(manifest["spec"]["prerequisites"]["base"], "0.3.29")
+        for legacy, message in [
+            ({"aiGateway": {"bindings": []}}, "aiGateway.bindings has been removed"),
+            ({"mcp": {"enabled": False}}, "root mcp has been removed"),
+        ]:
+            with self.subTest(legacy=legacy):
+                result = render("librechat/shared", legacy, check=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
+
     def config(self, values):
         result = render("librechat/shared", values, value_files=(
             ROOT / "tests/validation/helm-lint-values.yaml",
