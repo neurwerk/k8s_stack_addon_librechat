@@ -162,15 +162,20 @@ frontendLibrechatCodeInterpreterSecrets:
   executionManifestPrivateKey: lint-execution-manifest-private-key-not-real
   executionManifestPublicKey: lint-execution-manifest-public-key-not-real
   jwtPublicKey: lint-jwt-public-key-not-real
-mcp:
+mcp-servers:
   enabled: false
 infraAgentgatewayWrapper:
   hostname: agentgateway.lint.example
 aiGateway:
   enabled: true
-  bindings:
+external-api-providers:
     - id: example
       enabled: true
+      routes:
+        api:
+          enabled: true
+        inspected:
+          enabled: false
       providerId: openai
       provider: OpenAI
       upstreamURL: https://provider.lint.example

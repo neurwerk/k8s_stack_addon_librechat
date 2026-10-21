@@ -144,9 +144,15 @@ canonicalEndpointRouting:
   mode: internal-traefik
 
 # Shared MCP catalog supplied by platform defaults and client configuration.
-mcp:
+mcp-servers:
   enabled: false
-  servers: []
+  catalog:
+    presets: {}
+    custom: []
+
+self-hosted-api-providers: []
+external-api-providers: []
+external-subscription-providers: []
 
 # Selected client entries are injected through release values. Clients may also
 # add custom/local model shapes below.

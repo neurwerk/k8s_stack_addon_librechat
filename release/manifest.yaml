@@ -3,7 +3,7 @@ kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.3
+  version: 0.1.4
   status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
@@ -17,7 +17,7 @@ spec:
     - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-agentgateway-model-values, owner: client}
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
-    base: 0.3.27
+    base: 0.3.28
     tooling: 0.11.2
     stackSetup: 0.4.3
     baseCharts:
