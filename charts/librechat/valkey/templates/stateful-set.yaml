@@ -1,3 +1,13 @@
+{{- $existing := lookup "apps/v1" "StatefulSet" .Release.Namespace "frontend-librechat-valkey-stateful-set" -}}
+{{- $claims := list -}}
+{{- if $existing -}}
+{{- $claims = $existing.spec.volumeClaimTemplates -}}
+{{- if or (ne (len $claims) 1) (ne (first $claims).metadata.name "frontend-librechat-valkey-data") }}{{ fail "existing Valkey StatefulSet has unexpected claim templates" }}{{ end -}}
+{{- $spec := (first $claims).spec -}}
+{{- $persistence := .Values.frontendLibrechat.valkey.persistence -}}
+{{- if ne (toString $spec.resources.requests.storage) (toString $persistence.size) }}{{ fail "Valkey claim template size is immutable; storage changes require a separately approved migration" }}{{ end -}}
+{{- if and $persistence.storageClassName (ne $spec.storageClassName $persistence.storageClassName) }}{{ fail "Valkey claim template storage class is immutable; storage changes require a separately approved migration" }}{{ end -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -106,16 +116,22 @@ spec:
         - name: tmp
           emptyDir: {}
   volumeClaimTemplates:
+    {{- if $existing }}
+    {{- /* Preserve the complete immutable template, including API defaults and original labels. */}}
+    {{- toYaml $claims | nindent 4 }}
+    {{- else }}
     - metadata:
         name: frontend-librechat-valkey-data
         labels:
-          {{- include "frontend-librechat-valkey.labels" . | nindent 10 }}
+          {{- include "frontend-librechat-valkey.selectorLabels" . | nindent 10 }}
       spec:
         accessModes:
           - ReadWriteOnce
+        volumeMode: Filesystem
         resources:
           requests:
             storage: {{ .Values.frontendLibrechat.valkey.persistence.size }}
         {{- with .Values.frontendLibrechat.valkey.persistence.storageClassName }}
         storageClassName: {{ . | quote }}
         {{- end }}
+    {{- end }}

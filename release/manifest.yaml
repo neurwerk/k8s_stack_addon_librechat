@@ -3,7 +3,7 @@ kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.4
+  version: 0.1.5
   status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
