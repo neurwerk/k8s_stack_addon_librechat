@@ -1,10 +1,10 @@
 # Release and crossover
 
-## Release contract
+## Release prerequisites
 
-The first stable tag is `v0.1.3`, matching the [manifest](../../release/manifest.yaml); earlier manifest versions were not tagged releases. Use the manifest from the exact released commit for prerequisites and enabled packages. Base `v0.3.26` is incompatible: its signed release lacks the shared DocumentDB and OIDC provisioning charts required by this add-on.
+Use the [manifest](../../release/manifest.yaml) from the exact released commit for prerequisites and enabled packages. Base `v0.3.26` is incompatible: its signed release lacks the shared DocumentDB and OIDC provisioning charts required by this add-on.
 
-Before publication, verify the runtime Tooling image and standalone `stack-setup` release are published and match the reviewed versions, and record the exact reviewed Base release candidate. Run `mise exec -- make check` with `WORKSPACE_ROOT` set, then `addon-check <addon> --base <exact-base-candidate-checkout> --installable` through the selected Tooling checkout. Verify image digests and permission-hook compatibility against the pinned LibreChat image; reuse applicable operator-confirmed checks.
+Before publication, verify the runtime Tooling image and standalone `stack-setup` release are published and match the reviewed versions, and record the exact reviewed Base release candidate. Run the full check and candidate validation from [development](../development/README.md#requirements-and-checks). Verify image digests and permission-hook compatibility against the pinned LibreChat image using shared [image-release guidance](https://github.com/neurwerk/docs/blob/main/dev/operations/image-releases.md); reuse applicable operator-confirmed checks.
 
 After review and merge, obtain authorization to create and publish an annotated tag on the approved commit. Verify the remote tag target and publish GitHub release notes linking to this procedure and the manifest, stating the required Base version without implying it is already available. The add-on may be published after validation against the reviewed Base candidate; installation and adoption require the published, verified signed Base release. This add-on uses an annotated release tag and clients select its exact commit. This repository has CI for branches and pull requests, but no tag publication workflow. Client adoption and reconciliation require their own approval.
 
