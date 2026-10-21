@@ -1,9 +1,11 @@
 {{/* Route IDs only; native metadata and credentials never reach LibreChat. */}}
 {{- define "frontend-librechat-shared.mcpNames" -}}
-{{- $catalog := .Values.mcp.catalog | default dict -}}
+{{- if hasKey .Values "mcp" }}{{ fail "root mcp has been removed; use mcp-servers" }}{{ end -}}
+{{- $mcp := index .Values "mcp-servers" -}}
+{{- $catalog := $mcp.catalog | default dict -}}
 {{- $presets := $catalog.presets | default dict -}}
 {{- $custom := $catalog.custom | default list -}}
-{{- if .Values.mcp.servers }}{{ fail "mcp.servers has been removed; configure mcp.catalog" }}{{ end -}}
+{{- if hasKey $mcp "servers" }}{{ fail "mcp-servers.servers has been removed; configure mcp-servers.catalog" }}{{ end -}}
 {{- $names := list -}}
 {{- range $id, $selection := $presets -}}
 {{- if not (kindIs "bool" $selection.enabled) -}}{{ fail "MCP preset selection requires boolean enabled" }}{{- end -}}

@@ -27,12 +27,12 @@ class SubagentFileTests(unittest.TestCase):
         self.assertIs(defaults["enabled"], False)
         self.assertIs(defaults["fileSharing"]["enabled"], False)
         self.assertEqual(agents_config({}), {"capabilities": []})
-        self.assertEqual(agents_config({"mcp": {"enabled": True}}),
+        self.assertEqual(agents_config({"mcp-servers": {"enabled": True}}),
                          {"capabilities": ["tools"]})
 
     def test_delegation_preserves_tools_without_enabling_sharing(self):
         self.assertEqual(agents_config({
-            "mcp": {"enabled": True},
+            "mcp-servers": {"enabled": True},
             "frontendLibrechat": {"subagents": {"enabled": True}},
         }), {"capabilities": ["subagents", "tools"]})
 

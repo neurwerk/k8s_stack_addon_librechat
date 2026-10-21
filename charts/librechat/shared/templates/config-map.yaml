@@ -3,6 +3,7 @@
 {{- fail "canonicalEndpointRouting.mode must be internal-traefik or public-dns" -}}
 {{- end -}}
 {{- $modelCatalog := include "frontend-librechat-shared.modelCatalog" . | fromYaml -}}
+{{- $mcpNames := include "frontend-librechat-shared.mcpNames" . | fromYamlArray -}}
 {{- $costTokenConfig := include "librechat.costTokenConfig" (dict "root" . "catalog" $modelCatalog) | fromYaml -}}
 {{- $speech := include "librechat.speechEndpoints" . | fromYaml -}}
 {{- $memory := .Values.frontendLibrechat.memory -}}
@@ -162,12 +163,12 @@ data:
       allowedAddresses:
         - {{ .Values.frontendLibrechat.agentGateway.hostPort | quote }}
       agents:
-        {{- if or $subagents.enabled .Values.mcp.enabled .Values.frontendLibrechat.codeInterpreter.enabled .Values.frontendLibrechat.rag.enabled }}
+        {{- if or $subagents.enabled (index .Values "mcp-servers").enabled .Values.frontendLibrechat.codeInterpreter.enabled .Values.frontendLibrechat.rag.enabled }}
         capabilities:
           {{- if $subagents.enabled }}
           - subagents
           {{- end }}
-          {{- if .Values.mcp.enabled }}
+          {{- if (index .Values "mcp-servers").enabled }}
           - tools
           {{- end }}
           {{- if .Values.frontendLibrechat.codeInterpreter.enabled }}
@@ -219,7 +220,7 @@ data:
             X-User-Email: {{ printf "{{LIBRECHAT_OPENID_USER_EMAIL}}" | quote }}
             X-Session-ID: {{ printf "{{LIBRECHAT_BODY_CONVERSATIONID}}" | quote }}
         {{- end }}
-    {{- if .Values.mcp.enabled }}
+    {{- if (index .Values "mcp-servers").enabled }}
     mcpSettings:
       allowedAddresses:
         - {{ .Values.frontendLibrechat.agentGateway.hostPort | quote }}
@@ -227,7 +228,7 @@ data:
         - {{ printf "%s:443" .Values.authKeycloak.hostname | quote }}
         {{- end }}
     mcpServers:
-      {{- range include "frontend-librechat-shared.mcpNames" . | fromYamlArray }}
+      {{- range $mcpNames }}
       {{ . }}:
         type: streamable-http
         url: {{ printf "%s/bindings/mcp-%s/mcp" $.Values.frontendLibrechat.agentGateway.origin . | quote }}

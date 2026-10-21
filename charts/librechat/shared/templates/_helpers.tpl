@@ -63,11 +63,13 @@ app.kubernetes.io/component: shared
 {{- $_ := set $pricingModels $model.name (dict "provider" $provider "model" ($model.model | default "")) -}}
 {{- end -}}
 {{- if gt (len $specs) 256 }}{{- fail "effective LibreChat model catalog supports at most 256 destinations" }}{{- end -}}
-{{- if and $defaultModel (not (hasKey $effectiveNames $defaultModel)) }}{{- fail (printf "frontendLibrechat.agentGateway.defaultModel %q is not in the effective model catalog" $defaultModel) }}{{- end -}}
 {{- $modelEndpoints := dict -}}
 {{- $endpoints := list -}}
-{{- range $binding := (.Values.aiGateway | default dict).bindings | default list -}}
-{{- if and $binding.enabled (ne (toJson $binding.api) "false") (has "openai-chat-completions-v1" $binding.profiles) (or (has "company" $binding.credentialSources) (has "none" $binding.credentialSources)) -}}
+{{- if hasKey (.Values.aiGateway | default dict) "bindings" }}{{ fail "aiGateway.bindings has been removed; use grouped API providers" }}{{ end -}}
+{{- range $group := list "self-hosted-api-providers" "external-api-providers" -}}
+{{- range $binding := index $.Values $group | default list -}}
+{{- $api := ($binding.routes | default dict).api | default dict -}}
+{{- if and $binding.enabled (eq (toJson $api.enabled) "true") (has "openai-chat-completions-v1" $binding.profiles) (or (has "company" $binding.credentialSources) (and (eq $group "self-hosted-api-providers") (eq (toJson $binding.credentialSources) `["none"]`))) -}}
 {{- $endpointName := printf "AgentGateway-%s" $binding.id -}}
 {{- if eq $binding.id $.Values.frontendLibrechat.agentGateway.primaryBinding }}{{ $endpointName = "AgentGateway" }}{{ end -}}
 {{- $selected := $binding.catalogModels | default list -}}
@@ -86,9 +88,11 @@ app.kubernetes.io/component: shared
 {{- if hasKey $modelEndpoints $name }}{{ fail "LibreChat models must belong to exactly one API binding" }}{{ end -}}
 {{- $_ := set $modelEndpoints $name $endpointName -}}
 {{- end -}}
-{{- if $selected }}{{ $endpoints = append $endpoints (dict "id" $binding.id "name" $endpointName "models" $selected "apiPath" ($binding.apiPath | default (printf "/bindings/%s" $binding.id))) }}{{ end -}}
+{{- if $selected }}{{ $endpoints = append $endpoints (dict "id" $binding.id "name" $endpointName "models" $selected "apiPath" ($api.path | default (printf "/bindings/%s" $binding.id))) }}{{ end -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
+{{- if and $defaultModel (not (hasKey $effectiveNames $defaultModel)) }}{{- fail (printf "frontendLibrechat.agentGateway.defaultModel %q is not in the effective model catalog" $defaultModel) }}{{- end -}}
 {{- range $spec := $specs -}}
 {{- if not (hasKey $modelEndpoints $spec.name) }}{{ fail (printf "LibreChat model %s requires an explicit company/local API binding" $spec.name) }}{{ end -}}
 {{- $_ := set $spec.preset "endpoint" (get $modelEndpoints $spec.name) -}}

@@ -45,9 +45,9 @@ class SharedConfigTests(unittest.TestCase):
 
     def test_mcp_uses_login_token_and_chat_only_session_header(self) -> None:
         names = ("brave", "context7", "github")
-        args = ["--set", "mcp.enabled=true"]
+        args = ["--set", "mcp-servers.enabled=true"]
         for name in names:
-            args.extend(("--set", f"mcp.catalog.presets.{name}.enabled=true"))
+            args.extend(("--set", f"mcp-servers.catalog.presets.{name}.enabled=true"))
         config = yaml.safe_load(render_librechat_config(*args))
         self.assertEqual(set(config["mcpServers"]), set(names))
         for name, server in config["mcpServers"].items():
@@ -61,10 +61,10 @@ class SharedConfigTests(unittest.TestCase):
                     "X-Session-ID": "{{LIBRECHAT_BODY_CONVERSATIONID}}",
                 })
         disabled = yaml.safe_load(render_librechat_config(
-            *args, "--set", "mcp.catalog.presets.brave.enabled=false",
+            *args, "--set", "mcp-servers.catalog.presets.brave.enabled=false",
         ))
         self.assertEqual(set(disabled["mcpServers"]), {"context7", "github"})
-        disabled = yaml.safe_load(render_librechat_config(*args, "--set", "mcp.enabled=false"))
+        disabled = yaml.safe_load(render_librechat_config(*args, "--set", "mcp-servers.enabled=false"))
         self.assertNotIn("mcpServers", disabled)
 
     def test_speech_disabled_has_no_config_or_credentials(self) -> None:
@@ -186,7 +186,7 @@ class SharedConfigTests(unittest.TestCase):
                         "shared",
                         extra_args=(
                             "--set-string", f"canonicalEndpointRouting.mode={mode}",
-                            "--set", f"mcp.enabled={enabled}",
+                            "--set", f"mcp-servers.enabled={enabled}",
                         ),
                         check=False,
                     )
