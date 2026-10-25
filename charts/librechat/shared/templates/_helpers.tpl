@@ -69,7 +69,7 @@ app.kubernetes.io/component: shared
 {{- range $group := list "self-hosted-api-providers" "external-api-providers" -}}
 {{- range $binding := index $.Values $group | default list -}}
 {{- $api := ($binding.routes | default dict).api | default dict -}}
-{{- if and $binding.enabled (eq (toJson $api.enabled) "true") (has "openai-chat-completions-v1" $binding.profiles) (or (has "company" $binding.credentialSources) (and (eq $group "self-hosted-api-providers") (eq (toJson $binding.credentialSources) `["none"]`))) -}}
+{{- if and $binding.enabled (eq (toJson $api.enabled) "true") (has "openai-chat-completions-v1" $binding.profiles) (or (has "global" $binding.credentialSources) (has "company" $binding.credentialSources) (and (eq $group "self-hosted-api-providers") (eq (toJson $binding.credentialSources) `["none"]`))) -}}
 {{- $endpointName := printf "AgentGateway-%s" $binding.id -}}
 {{- if eq $binding.id $.Values.frontendLibrechat.agentGateway.primaryBinding }}{{ $endpointName = "AgentGateway" }}{{ end -}}
 {{- $selected := $binding.catalogModels | default list -}}
