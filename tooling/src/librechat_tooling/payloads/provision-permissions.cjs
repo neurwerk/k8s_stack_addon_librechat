@@ -63,12 +63,13 @@ async function main() {
     process.exit(1);
   }, 240000);
   try {
-    const mongoose = require('mongoose');
-    const schemas = require('@librechat/data-schemas');
+    const nativeRequire = require('node:module').createRequire('/app/package.json');
+    const mongoose = nativeRequire('mongoose');
+    const schemas = nativeRequire('@librechat/data-schemas');
     // Upstream connection errors can contain credential-bearing URIs.
     schemas.logger.silent = true;
-    const api = require('@librechat/api');
-    const { CacheKeys } = require('librechat-data-provider');
+    const api = nativeRequire('@librechat/api');
+    const { CacheKeys } = nativeRequire('librechat-data-provider');
     for (let attempt = 1; attempt <= 12; attempt += 1) {
       try {
         if (mongoose.connection.readyState !== 1) {

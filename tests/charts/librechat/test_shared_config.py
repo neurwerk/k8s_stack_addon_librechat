@@ -43,6 +43,44 @@ def agent_capabilities(config: str) -> list[str]:
 class SharedConfigTests(unittest.TestCase):
     """Keep generated agent, reasoning, and MCP settings aligned."""
 
+    def test_runtime_keys_are_delivered_directly_without_helm_credentials(self) -> None:
+        manifest = render_chart("shared", extra_args=(
+            "--set-string", "frontendLibrechatSecrets.credsKey=synthetic-must-not-render",
+            "--set-string", "frontendLibrechatSecrets.documentdbPassword=synthetic-must-not-render",
+        )).stdout
+        self.assertNotIn("synthetic-must-not-render", manifest)
+        self.assertEqual(resources_of_kind(manifest, "Secret"), [])
+        delivery = yaml.safe_load(resource(manifest, "ExternalSecret", "frontend-librechat-runtime-secret"))["spec"]
+        self.assertEqual(delivery["target"]["name"], "frontend-librechat-secret")
+        template = delivery["target"]["template"]
+        self.assertEqual(template["mergePolicy"], "Replace")
+        data = template["data"]
+        fields = {
+            "CREDS_IV": "credsIv", "CREDS_KEY": "credsKey",
+            "JWT_REFRESH_SECRET": "jwtRefreshSecret", "JWT_SECRET": "jwtSecret",
+            "MEILI_MASTER_KEY": "meiliMasterKey", "OPENID_CLIENT_SECRET": "openidClientSecret",
+            "OPENID_SESSION_SECRET": "openidSessionSecret", "VALKEY_PASSWORD": "valkeyPassword",
+        }
+        for key, field in fields.items():
+            self.assertEqual(data[key], "{{ ." + field + " }}")
+        self.assertEqual(set(data), set(fields) | {
+            "DOMAIN_CLIENT", "DOMAIN_SERVER", "MONGO_URI", "REDIS_URI",
+            "OPENID_CLIENT_ID", "OPENID_ISSUER",
+        })
+        self.assertIn("{{ .documentdbUser | urlquery }}:{{ .documentdbPassword | urlquery }}@", data["MONGO_URI"])
+        self.assertIn("redis://:{{ .valkeyPassword | urlquery }}@", data["REDIS_URI"])
+        refs = {item["secretKey"]: item["remoteRef"] for item in delivery["data"]}
+        for field in set(fields.values()) | {"documentdbUser", "documentdbPassword"}:
+            record = "database" if field.startswith("documentdb") else "oidc" if field == "openidClientSecret" else "runtime"
+            self.assertEqual(refs[field], {"key": f"addons/librechat/{record}", "property": field})
+        admin = yaml.safe_load(resource(manifest, "ExternalSecret", "frontend-librechat-admin-panel-secret"))["spec"]
+        self.assertEqual(admin["target"]["name"], "frontend-librechat-admin-panel-secret")
+        self.assertEqual(admin["target"]["template"]["data"], {
+            "ADMIN_PANEL_METRICS_SECRET": "{{ .adminPanelMetricsSecret }}",
+            "SESSION_SECRET": "{{ .adminPanelSessionSecret }}",
+        })
+        self.assertEqual({item["remoteRef"]["key"] for item in admin["data"]}, {"addons/librechat/runtime"})
+
     def test_mcp_uses_login_token_and_chat_only_session_header(self) -> None:
         names = ("brave", "context7", "github")
         args = ["--set", "mcp-servers.enabled=true"]
@@ -78,9 +116,10 @@ class SharedConfigTests(unittest.TestCase):
         self.assertNotIn("apiKey: \"\"", config)
         app = render_chart("app", extra_args=args).stdout
         self.assertEqual(resources_of_kind(app, "ExternalSecret"), [])
+        shared = render_chart("shared", extra_args=args).stdout
         for direction in ("stt", "tts"):
             self.assertNotIn(f"LIBRECHAT_{direction.upper()}_API_KEY", config + app)
-            self.assertNotIn(f"frontend-librechat-{direction}-secret", app)
+            self.assertNotIn(f"frontend-librechat-{direction}-secret", app + shared)
 
     def test_local_speech_scopes_egress_and_optional_credentials(self) -> None:
         for direction, host in (("stt", "10.20.30.40"), ("tts", "172.16.30.40")):
@@ -104,16 +143,16 @@ class SharedConfigTests(unittest.TestCase):
                     env = f"LIBRECHAT_{direction.upper()}_API_KEY"
                     if auth:
                         self.assertIn(f'apiKey: "${{{env}}}"', config)
-                        secret = resource(app, "ExternalSecret", name)
+                        secret = resource(render_chart("shared", extra_args=args).stdout, "ExternalSecret", name)
                         self.assertIn("name: frontend-librechat-openbao-secret-store", secret)
-                        self.assertIn(f"key: frontend-librechat/external\n        property: {direction}ApiKey", secret)
+                        self.assertIn(f"key: addons/librechat/external/speech\n        property: {direction}ApiKey", secret)
                         deployment = resource(app, "Deployment", "frontend-librechat")
                         self.assertIn(f"reload: frontend-librechat-secret,{name}", deployment)
                         self.assertIn(f"name: {name}\n                  key: {direction}ApiKey\n                  optional: false", deployment)
                     else:
                         self.assertIn('apiKey: ""', config)
                         self.assertNotIn(env, config + app)
-                        self.assertNotIn(name, app)
+                        self.assertNotIn(name, app + render_chart("shared", extra_args=args).stdout)
                     other = "tts" if direction == "stt" else "stt"
                     self.assertNotIn(f"frontend-librechat-{other}-secret", app)
 

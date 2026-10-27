@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { provisionPermissions } = require('../../../charts/librechat/app/files/provision-permissions.cjs');
+const { provisionPermissions } = require('../../../tooling/src/librechat_tooling/payloads/provision-permissions.cjs');
 
 function fixture({ fresh = false, fault } = {}) {
   const db = {};
@@ -82,7 +82,7 @@ test('non-base tenant and missing shared Redis readiness fail closed', async () 
 test('runner bounds retries, exits nonzero, and never logs credential-bearing errors', async () => {
   const { readFileSync } = require('node:fs');
   const { runInNewContext } = require('node:vm');
-  const source = readFileSync(require.resolve('../../../charts/librechat/app/files/provision-permissions.cjs'), 'utf8');
+  const source = readFileSync(require.resolve('../../../tooling/src/librechat_tooling/payloads/provision-permissions.cjs'), 'utf8');
   const exits = [];
   const messages = [];
   let attempts = 0;
@@ -94,6 +94,14 @@ test('runner bounds retries, exits nonzero, and never logs credential-bearing er
   await runInNewContext(`${source}\nmain();`, {
     module: { exports: {} },
     require: (name) => {
+      if (name === 'node:module') return { createRequire: (root) => {
+        assert.equal(root, '/app/package.json');
+        return (dependency) => {
+          if (dependency === 'mongoose') return mongoose;
+          if (dependency === '@librechat/data-schemas') return { logger: {} };
+          return {};
+        };
+      } };
       if (name === 'mongoose') return mongoose;
       if (name === '@librechat/data-schemas') return { logger: {} };
       return {};
