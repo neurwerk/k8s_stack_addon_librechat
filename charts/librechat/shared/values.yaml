@@ -113,25 +113,6 @@ frontendLibrechat:
       name: frontend-librechat-valkey-service
       port: 6379
 
-# Sensitive values are supplied by the namespace-local OpenBao-backed values Secret.
-frontendLibrechatSecrets:
-  adminPanelMetricsSecret: ""
-  adminPanelSessionSecret: ""
-  codeInterpreterJwtPrivateKey: ""
-  credsIv: ""
-  credsKey: ""
-  documentdbPassword: ""
-  documentdbUser: ""
-  jwtRefreshSecret: ""
-  jwtSecret: ""
-  meiliMasterKey: ""
-  openidClientSecret: ""
-  openidSessionSecret: ""
-  ragOpenaiApiKey: ""
-  ragPostgresqlPassword: ""
-  ragPostgresqlUser: ""
-  valkeyPassword: ""
-
 # Keycloak client facts are supplied by shared/client configuration layers.
 authKeycloak:
   hostname: keycloak.example.invalid

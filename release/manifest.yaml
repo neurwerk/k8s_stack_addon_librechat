@@ -1,10 +1,10 @@
-apiVersion: addons.neurwerk.com/v1alpha1
+apiVersion: addons.neurwerk.com/v1alpha2
 kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.6
-  status: ready
+  version: 0.1.7
+  status: staged
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
   inputs:
@@ -15,21 +15,29 @@ spec:
     - {kind: ConfigMap, namespace: frontend-librechat, name: client-values, owner: client}
     - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-product-values, owner: client}
     - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-agentgateway-model-values, owner: client}
+    - {kind: ConfigMap, namespace: frontend-librechat, name: client-openrouter-catalog-values, owner: client}
+    - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-model-cost-catalog, owner: client}
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
-    base: 0.3.29
-    tooling: 0.11.2
-    stackSetup: 0.4.3
+    base: 0.4.0
+    tooling: 0.14.0
+    stackSetup: 0.7.0
     baseCharts:
       - charts/postgres/documentdb-addon
       - charts/keycloak/addon-access
       - charts/keycloak/addon-oidc
+    baseChartVersions:
+      charts/postgres/documentdb-addon: 1.0.4
+      charts/keycloak/addon-access: 0.1.6
+      charts/keycloak/addon-oidc: 0.2.0
   packages:
     - name: namespaces
       path: releases/namespaces/librechat
     - name: secret-sync
       path: releases/librechat/secret-sync
       dependsOn: [namespaces]
+      helmOutputs:
+        - {kind: ConfigMap, namespace: frontend-librechat, name: frontend-librechat-config-map, helmRelease: frontend-librechat-shared}
     - name: database
       path: releases/librechat/database
       dependsOn: [secret-sync]
@@ -54,3 +62,156 @@ spec:
     databases: retain
     volumes: retain
     credentials: retain
+  features:
+    stt-auth: false
+    tts-auth: false
+  databases:
+    - id: documentdb
+      service: {namespace: infra-postgres-operations, name: postgres-operations}
+      engine: documentdb
+      database: LibreChat
+      role: librechat
+      owner: librechat
+      package: database
+      baseChart: charts/postgres/documentdb-addon
+      exclusive: true
+  identities:
+    - id: browser
+      mode: browser
+      clientId: librechat
+      secret: {record: oidc, field: openidClientSecret}
+      browserSettings:
+        namespace: auth-keycloak
+        settings: librechat-oidc-settings
+        approval: librechat-oidc-approval-values
+  artifacts:
+    - {id: tooling, role: product, image: 'ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.7'}
+    - {id: application, role: native, image: 'ghcr.io/librechat-ai/librechat:v0.8.8@sha256:5b706bcee1ca154a1e2987303aaeca0eb27f97919cccee4bb604226c2f8abf61'}
+    - {id: admin-panel, role: native, image: 'ghcr.io/clickhouse/librechat-admin-panel:1.0.0@sha256:f889fb4fcec19ef90203cce11d66e8f34223d512957666a6a7c8967efb22a2de'}
+    - {id: meilisearch, role: native, image: 'docker.io/getmeili/meilisearch:v1.35.1@sha256:8b57fc3c7f46535ddef3828df1538465ac19d892eb57c9a10da6df0880bd5856'}
+    - {id: valkey, role: native, image: 'docker.io/valkey/valkey:9.1.1-alpine@sha256:15568b9cb7eb67f4aed4de018c23f13d344e0e6437b31fe8fb8823dc81ebb3a9'}
+    - {id: shared-provisioner, role: shared, image: 'ghcr.io/neurwerk/k8s-stack-tooling:0.12.0@sha256:b70f0f93ca2c3e5cef9290af2db6480bec72cedc0289ecd232747996eb01091a'}
+    - {id: browser-provisioner, role: shared, image: 'ghcr.io/neurwerk/k8s-stack-tooling:0.14.0@sha256:a1db80f00e8579478382ecc34717af484cf75239008ae8dbe66b01632aa49305'}
+    - {id: database-provisioner, role: native, image: 'ghcr.io/documentdb/documentdb/documentdb-local:pg18-0.116.0@sha256:01bb9408393fb6417cc32735f4566dee4b53bbab6df6b70c42797317da631f12'}
+  consumers:
+    - {artifact: tooling, package: app, kind: HelmRelease, namespace: frontend-librechat, name: librechat, container: stage-permissions, location: initContainers}
+    - {artifact: application, package: app, kind: HelmRelease, namespace: frontend-librechat, name: librechat, container: permissions}
+    - {artifact: application, package: app, kind: HelmRelease, namespace: frontend-librechat, name: librechat, container: wait-for-openid, location: initContainers}
+    - {artifact: application, package: app, kind: HelmRelease, namespace: frontend-librechat, name: librechat, container: librechat}
+    - {artifact: admin-panel, package: app, kind: HelmRelease, namespace: frontend-librechat, name: frontend-librechat-admin-panel, container: admin-panel}
+    - {artifact: meilisearch, package: app, kind: HelmRelease, namespace: frontend-librechat, name: frontend-librechat-meilisearch, container: meilisearch}
+    - {artifact: valkey, package: app, kind: HelmRelease, namespace: frontend-librechat, name: frontend-librechat-valkey, container: valkey}
+    - {artifact: shared-provisioner, package: database, kind: HelmRelease, namespace: infra-postgres-operations, name: librechat-documentdb, container: stage-provisioner, location: initContainers}
+    - {artifact: database-provisioner, package: database, kind: HelmRelease, namespace: infra-postgres-operations, name: librechat-documentdb, container: provision}
+    - {artifact: shared-provisioner, package: access, kind: HelmRelease, namespace: auth-keycloak, name: keycloak-librechat-access, container: reconcile}
+    - {artifact: browser-provisioner, package: oidc, kind: HelmRelease, namespace: auth-keycloak, name: keycloak-librechat-oidc, container: configure}
+  setup:
+    records:
+      - id: runtime
+        path: addons/librechat/runtime
+        fields:
+          credsKey:
+            generate: {encoding: hex, bytes: 32}
+            validation: {format: hex, minLength: 64, maxLength: 64}
+          credsIv:
+            generate: {encoding: hex, bytes: 16}
+            validation: {format: hex, minLength: 32, maxLength: 32}
+          jwtSecret:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+          jwtRefreshSecret:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+          meiliMasterKey:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+          openidSessionSecret:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+          valkeyPassword:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+          adminPanelSessionSecret:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+          adminPanelMetricsSecret:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+      - id: database
+        path: addons/librechat/database
+        fields:
+          documentdbUser: {literal: librechat}
+          documentdbPassword:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+      - id: oidc
+        path: addons/librechat/oidc
+        fields:
+          openidClientSecret:
+            generate: {encoding: base64url, bytes: 32}
+            validation: {format: base64url, minLength: 43, maxLength: 43}
+      - id: speech
+        path: addons/librechat/external/speech
+        fields:
+          sttApiKey:
+            when: stt-auth
+            supplied: {group: stt, key: apiKey}
+          ttsApiKey:
+            when: tts-auth
+            supplied: {group: tts, key: apiKey}
+    inputGroups:
+      - id: stt
+        when: stt-auth
+        fields:
+          apiKey: {format: text, minLength: 1, maxLength: 16384}
+      - id: tts
+        when: tts-auth
+        fields:
+          apiKey: {format: text, minLength: 1, maxLength: 16384}
+    readers:
+      - role: addon-librechat-runtime
+        namespace: frontend-librechat
+        serviceAccount: frontend-librechat-external-secrets
+        audience: openbao
+        records: [runtime, database, oidc, speech]
+      - role: infra-postgres-operations
+        namespace: infra-postgres-operations
+        serviceAccount: infra-postgres-operations-external-secrets
+        audience: openbao
+        records: [database]
+      - role: auth-keycloak
+        namespace: auth-keycloak
+        serviceAccount: auth-keycloak-external-secrets
+        audience: openbao
+        records: [oidc]
+    deliveries:
+      - {namespace: frontend-librechat, name: frontend-librechat-runtime-secret, secretStore: frontend-librechat-openbao-secret-store, targetSecret: frontend-librechat-secret, records: [runtime, database, oidc]}
+      - {namespace: frontend-librechat, name: frontend-librechat-admin-panel-secret, secretStore: frontend-librechat-openbao-secret-store, targetSecret: frontend-librechat-admin-panel-secret, records: [runtime]}
+      - {namespace: infra-postgres-operations, name: librechat-documentdb-password, secretStore: infra-postgres-operations-openbao-secret-store, targetSecret: librechat-documentdb-password, records: [database]}
+      - {namespace: auth-keycloak, name: librechat-oidc-secret, secretStore: auth-keycloak-openbao-secret-store, targetSecret: librechat-oidc-secret, records: [oidc]}
+      - {namespace: frontend-librechat, name: frontend-librechat-stt-secret, secretStore: frontend-librechat-openbao-secret-store, targetSecret: frontend-librechat-stt-secret, records: [speech], when: stt-auth}
+      - {namespace: frontend-librechat, name: frontend-librechat-tts-secret, secretStore: frontend-librechat-openbao-secret-store, targetSecret: frontend-librechat-tts-secret, records: [speech], when: tts-auth}
+    handover: []
+    lifecycle:
+      delivery:
+        - {kind: SecretStore, namespace: frontend-librechat, name: frontend-librechat-openbao-secret-store}
+        - {kind: SecretStore, namespace: infra-postgres-operations, name: infra-postgres-operations-openbao-secret-store}
+        - {kind: SecretStore, namespace: auth-keycloak, name: auth-keycloak-openbao-secret-store}
+        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-runtime-secret}
+        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-admin-panel-secret}
+        - {kind: ExternalSecret, namespace: infra-postgres-operations, name: librechat-documentdb-password}
+        - {kind: ExternalSecret, namespace: auth-keycloak, name: librechat-oidc-secret}
+        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-stt-secret, when: stt-auth}
+        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-tts-secret, when: tts-auth}
+      provision:
+        - {kind: HelmRelease, namespace: infra-postgres-operations, name: librechat-documentdb}
+        - {kind: HelmRelease, namespace: auth-keycloak, name: keycloak-librechat-access}
+        - {kind: HelmRelease, namespace: auth-keycloak, name: librechat-oidc-settings}
+        - {kind: HelmRelease, namespace: auth-keycloak, name: keycloak-librechat-oidc}
+        - {kind: HelmRelease, namespace: frontend-librechat, name: frontend-librechat-shared}
+      restart:
+        - {kind: StatefulSet, namespace: frontend-librechat, name: frontend-librechat-valkey-stateful-set}
+        - {kind: StatefulSet, namespace: frontend-librechat, name: frontend-librechat-meilisearch-stateful-set}
+        - {kind: Deployment, namespace: frontend-librechat, name: frontend-librechat}
+        - {kind: Deployment, namespace: frontend-librechat, name: frontend-librechat-admin-panel}
+      rotate: []

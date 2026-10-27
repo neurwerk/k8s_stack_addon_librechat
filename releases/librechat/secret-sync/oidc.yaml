@@ -15,5 +15,5 @@ spec:
   data:
     - secretKey: clientSecret
       remoteRef:
-        key: auth-keycloak/internal
-        property: librechatOidcClientSecret
+        key: addons/librechat/oidc
+        property: openidClientSecret

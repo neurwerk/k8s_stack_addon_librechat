@@ -91,16 +91,26 @@ spec:
         fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        - name: stage-permissions
+          image: {{ .Values.frontendLibrechat.app.permissions.toolingImage | quote }}
+          command: [librechat-stage-permissions]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            {{- toYaml .Values.frontendLibrechat.app.permissions.resources | nindent 12 }}
+          volumeMounts:
+            - name: payloads
+              mountPath: /work/payloads
       containers:
         - name: permissions
           image: {{ .Values.frontendLibrechat.app.image | quote }}
           imagePullPolicy: {{ .Values.frontendLibrechat.app.imagePullPolicy }}
           workingDir: /app
-          command: [node, -e]
-          args:
-            - |
-              {{- .Files.Get "files/provision-permissions.cjs" | nindent 14 }}
-              void main();
+          command: [node, /work/payloads/provision-permissions.cjs]
           env:
             - name: NODE_ENV
               value: production
@@ -124,6 +134,9 @@ spec:
           resources:
             {{- toYaml .Values.frontendLibrechat.app.permissions.resources | nindent 12 }}
           volumeMounts:
+            - name: payloads
+              mountPath: /work/payloads
+              readOnly: true
             - name: documentdb-ca
               mountPath: {{ .Values.frontendLibrechat.documentdb.caBundle.mountPath }}
               subPath: {{ .Values.frontendLibrechat.documentdb.caBundle.key }}
@@ -133,6 +146,8 @@ spec:
             - name: tmp
               mountPath: /tmp
       volumes:
+        - name: payloads
+          emptyDir: {}
         - name: documentdb-ca
           configMap:
             name: {{ .Values.frontendLibrechat.documentdb.caBundle.name }}

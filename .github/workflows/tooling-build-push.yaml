@@ -1,0 +1,127 @@
+name: Build and Push LibreChat Tooling
+on:
+  push:
+    tags: ["tooling/v*"]
+concurrency:
+  group: librechat-tooling-release-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  IMAGE_NAME: ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0}
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with: {version: "0.12.7"}
+      - name: Validate exact reviewed source, tag, package and artifact
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^tooling/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]
+          export VERSION="${BASH_REMATCH[1]}"
+          git merge-base --is-ancestor HEAD origin/main
+          uv lock --check --project tooling
+          uv run --locked --project tooling python - <<'PY'
+          import os, tomllib
+          from pathlib import Path
+          from k8s_stack_tooling.addons import load_manifest
+          project = tomllib.loads(Path("tooling/pyproject.toml").read_text())
+          lock = tomllib.loads(Path("tooling/uv.lock").read_text())
+          addon = load_manifest(Path("release/manifest.yaml"))
+          version = os.environ["VERSION"]
+          locked = next(p["version"] for p in lock["package"] if p["name"] == "librechat-tooling")
+          if {project["project"]["version"], locked, addon.spec.version} != {version}:
+              raise SystemExit("Tag, package, lock and add-on versions must match")
+          image = next(a.image for a in addon.spec.artifacts if a.id == "tooling")
+          if image.split("@", 1)[0] != os.environ["IMAGE_NAME"] + ":" + version:
+              raise SystemExit("Declared tooling artifact does not match release")
+          PY
+  quality:
+    uses: ./.github/workflows/ci.yml
+    permissions: {contents: read}
+  build:
+    needs: [validate, quality]
+    runs-on: ubuntu-latest
+    permissions: {contents: read, packages: write}
+    outputs:
+      digest: ${{ steps.publish.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish once or verify the existing immutable version
+        id: publish
+        run: |
+          set -eu -o pipefail
+          version="${GITHUB_REF_NAME#tooling/v}"
+          image="$IMAGE_NAME:$version"
+          set +e
+          manifest="$(docker buildx imagetools inspect "$image" --format '{{json .Manifest}}' 2>&1)"
+          status=$?
+          set -e
+          if (( status != 0 )); then
+            if [[ "$manifest" != *"not found"* && "$manifest" != *"manifest unknown"* ]]; then
+              echo 'Registry verification failed; refusing publication' >&2
+              exit 1
+            fi
+            docker buildx build --platform linux/amd64 --push \
+              --build-arg VERSION="$version" --build-arg REVISION="$GITHUB_SHA" \
+              --tag "$image" tooling
+            manifest="$(docker buildx imagetools inspect "$image" --format '{{json .Manifest}}')"
+          fi
+          digest="$(jq -er '.digest | select(type == "string")' <<< "$manifest")"
+          [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+          docker pull --platform linux/amd64 "$IMAGE_NAME@$digest"
+          docker image inspect "$IMAGE_NAME@$digest" | jq -e \
+            --arg revision "$GITHUB_SHA" --arg version "$version" '
+              .[0] | .Os == "linux" and .Architecture == "amd64" and
+              .Config.Labels["org.opencontainers.image.revision"] == $revision and
+              .Config.Labels["org.opencontainers.image.version"] == $version and
+              .Config.Labels["org.opencontainers.image.source"] == "https://github.com/neurwerk/k8s_stack_addon_librechat"
+            ' > /dev/null
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+  verify-public:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    steps:
+      - name: Verify anonymous pulls of the version and published digest
+        env:
+          DIGEST: ${{ needs.build.outputs.digest }}
+        run: |
+          set -eu -o pipefail
+          export DOCKER_CONFIG="$(mktemp -d)"
+          trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+          echo '{"auths":{}}' > "$DOCKER_CONFIG/config.json"
+          image="$IMAGE_NAME:${GITHUB_REF_NAME#tooling/v}"
+          docker pull --platform linux/amd64 "$image"
+          docker image inspect "$image" | jq -e --arg expected "$IMAGE_NAME@$DIGEST" \
+            '.[0] | (.RepoDigests | index($expected)) != null and .Os == "linux" and .Architecture == "amd64"' > /dev/null
+          docker pull --platform linux/amd64 "$IMAGE_NAME@$DIGEST"
+      - name: Report the manual visibility gate
+        if: failure()
+        run: echo 'Anonymous verification failed; inspect the check, make the intended public package Public if needed, then rerun failed jobs without replacing the image tag.' >> "$GITHUB_STEP_SUMMARY"
+  release:
+    needs: [build, verify-public]
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    steps:
+      - name: Publish descriptive tooling release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIGEST: ${{ needs.build.outputs.digest }}
+        run: |
+          version="${GITHUB_REF_NAME#tooling/v}"
+          title="LibreChat Neurwerk add-on tooling v$version"
+          notes="Tooling image: $IMAGE_NAME:$version@$DIGEST; anonymous linux/amd64 pulls verified."
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json body,title |
+              jq -e --arg digest "$DIGEST" --arg title "$title" '.title == $title and (.body | contains($digest))' > /dev/null
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$title" --notes "$notes"
+          fi

@@ -4,7 +4,7 @@
 
 Clients supply the namespace-local ConfigMaps listed in the [release manifest](../../release/manifest.yaml). `frontendLibrechat.enabled` must agree with the selected stages. Set `frontendLibrechat.hostname` and `.adminPanel.hostname` consistently in the OIDC and application inputs.
 
-The application releases read defaults, client values and `librechat-product-values` in that order; later values win. The shared release also imports runtime Secrets, optional model/pricing catalogs and `librechat-agentgateway-model-values`. Inspect each [HelmRelease](../../releases/librechat/app) for its exact precedence. Supply the same speech, object-storage and other cross-chart settings to their consumers.
+The application releases read defaults, client values and `librechat-product-values` in that order; later values win. The shared release also imports optional model/pricing catalogs and `librechat-agentgateway-model-values`, never credential-bearing Helm values. It creates ExternalSecrets that deliver canonical add-on records directly into final application Secrets. Inspect each [HelmRelease](../../releases/librechat/app) for its exact precedence. Supply the same speech, object-storage and other cross-chart settings to their consumers.
 
 | Setting/input | Purpose |
 | --- | --- |

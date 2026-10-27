@@ -4,3 +4,27 @@ resources:
   - runtime.yaml
   - oidc.yaml
   - database.yaml
+  - ../app/shared.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: base-shared-document-attachments-config-map
+    namespace: frontend-librechat
+    files:
+      - values.yaml=../../shared/document-attachments.yaml
+  - name: base-shared-hostnames-config-map
+    namespace: frontend-librechat
+    files:
+      - values.yaml=../../shared/hostnames.yaml
+  - name: base-shared-resources-config-map
+    namespace: frontend-librechat
+    files:
+      - values.yaml=../../shared/resources.yaml
+  - name: base-shared-mcp-config-map
+    namespace: frontend-librechat
+    files:
+      - values.yaml=../../shared/default-mcp-settings.yaml
+  - name: frontend-librechat-app-defaults
+    namespace: frontend-librechat
+    files:
+      - values.yaml=../app/app-defaults.yaml

@@ -46,9 +46,6 @@ spec:
       name: librechat-model-cost-catalog
       valuesKey: catalog.json
       optional: true
-    - kind: Secret
-      name: frontend-librechat-runtime-secret
-      valuesKey: values.yaml
     - kind: ConfigMap
       name: client-values
       valuesKey: values.yaml

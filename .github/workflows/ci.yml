@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_call:
   push:
     branches: [main]
   pull_request:
@@ -20,16 +21,11 @@ jobs:
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           enable-cache: true
+          version: "0.12.7"
       - name: Install Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.20.0
-      - name: Check out addon validation
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: neurwerk/k8s_stack_tooling
-          ref: fee1854a8d55d1b9ded5dda221e4fb854ef66c56
-          path: .ci/tooling
       - name: Install Helm
         uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
         with:
@@ -46,5 +42,41 @@ jobs:
           uri: https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz
           name: kubeconform
           version: v0.8.0
+      - name: Read exact Base prerequisite
+        id: prerequisite
+        run: |
+          uv run --locked --project tooling python -c 'from pathlib import Path; from k8s_stack_tooling.addons import load_manifest; print("base=v" + load_manifest(Path("release/manifest.yaml")).spec.prerequisites.base)' >> "$GITHUB_OUTPUT"
+      - name: Acquire selected Base release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: neurwerk/k8s_stack_base
+          ref: ${{ steps.prerequisite.outputs.base }}
+          path: .ci/base
       - name: Run full validation
-        run: make check ADDON_TOOLING="$GITHUB_WORKSPACE/.ci/tooling"
+        run: make check BASE_REPO="$GITHUB_WORKSPACE/.ci/base"
+      - name: Build the tooling image without publication
+        run: |
+          version="$(uv run --locked --project tooling python -c 'import tomllib; print(tomllib.load(open("tooling/pyproject.toml", "rb"))["project"]["version"])')"
+          make tooling-build VERSION="$version" REVISION="$GITHUB_SHA"
+      - name: Verify packaged permissions in the pinned native image
+        run: |
+          set -eu -o pipefail
+          read -r tooling native < <(uv run --locked --project tooling python - <<'PY'
+          from pathlib import Path
+          from k8s_stack_tooling.addons import load_manifest
+          artifacts = {a.id: a.image for a in load_manifest(Path("release/manifest.yaml")).spec.artifacts}
+          print(artifacts["tooling"], artifacts["application"])
+          PY
+          )
+          tooling="${tooling%@*}"
+          directory="$RUNNER_TEMP/librechat-payloads"
+          mkdir -p "$directory"
+          chmod 777 "$directory"
+          docker run --rm --network none --read-only --user 65532:65532 \
+            -v "$directory:/work/payloads" "$tooling" librechat-stage-permissions
+          cmp "$directory/provision-permissions.cjs" tooling/src/librechat_tooling/payloads/provision-permissions.cjs
+          test "$(stat -c '%a' "$directory/provision-permissions.cjs")" = 444
+          docker run --rm --platform linux/amd64 --network none --read-only --entrypoint node \
+            -v "$directory:/work/payloads:ro" "$native" --check /work/payloads/provision-permissions.cjs
+          docker run --rm --platform linux/amd64 --network none --read-only --entrypoint node \
+            "$native" -e 'const r=require("node:module").createRequire("/app/package.json"); const s=r("@librechat/data-schemas"); s.logger.silent=true; const a=r("@librechat/api"); const d=r("librechat-data-provider"); if(typeof r("mongoose").connect!=="function" || ![s.createModels,s.createMethods,s.scopedCacheKey,s.getTenantId,a.waitForKeyvRedisClient,a.standardCache].every(x=>typeof x==="function") || !d.CacheKeys.ROLES) process.exit(1);'
