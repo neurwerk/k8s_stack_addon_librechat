@@ -20,8 +20,8 @@ spec:
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
     base: 0.4.0
-    tooling: 0.14.0
-    stackSetup: 0.7.0
+    tooling: 0.15.0
+    stackSetup: 0.8.0
     baseCharts:
       - charts/postgres/documentdb-addon
       - charts/keycloak/addon-access
@@ -192,26 +192,3 @@ spec:
       - {namespace: frontend-librechat, name: frontend-librechat-stt-secret, secretStore: frontend-librechat-openbao-secret-store, targetSecret: frontend-librechat-stt-secret, records: [speech], when: stt-auth}
       - {namespace: frontend-librechat, name: frontend-librechat-tts-secret, secretStore: frontend-librechat-openbao-secret-store, targetSecret: frontend-librechat-tts-secret, records: [speech], when: tts-auth}
     handover: []
-    lifecycle:
-      delivery:
-        - {kind: SecretStore, namespace: frontend-librechat, name: frontend-librechat-openbao-secret-store}
-        - {kind: SecretStore, namespace: infra-postgres-operations, name: infra-postgres-operations-openbao-secret-store}
-        - {kind: SecretStore, namespace: auth-keycloak, name: auth-keycloak-openbao-secret-store}
-        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-runtime-secret}
-        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-admin-panel-secret}
-        - {kind: ExternalSecret, namespace: infra-postgres-operations, name: librechat-documentdb-password}
-        - {kind: ExternalSecret, namespace: auth-keycloak, name: librechat-oidc-secret}
-        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-stt-secret, when: stt-auth}
-        - {kind: ExternalSecret, namespace: frontend-librechat, name: frontend-librechat-tts-secret, when: tts-auth}
-      provision:
-        - {kind: HelmRelease, namespace: infra-postgres-operations, name: librechat-documentdb}
-        - {kind: HelmRelease, namespace: auth-keycloak, name: keycloak-librechat-access}
-        - {kind: HelmRelease, namespace: auth-keycloak, name: librechat-oidc-settings}
-        - {kind: HelmRelease, namespace: auth-keycloak, name: keycloak-librechat-oidc}
-        - {kind: HelmRelease, namespace: frontend-librechat, name: frontend-librechat-shared}
-      restart:
-        - {kind: StatefulSet, namespace: frontend-librechat, name: frontend-librechat-valkey-stateful-set}
-        - {kind: StatefulSet, namespace: frontend-librechat, name: frontend-librechat-meilisearch-stateful-set}
-        - {kind: Deployment, namespace: frontend-librechat, name: frontend-librechat}
-        - {kind: Deployment, namespace: frontend-librechat, name: frontend-librechat-admin-panel}
-      rotate: []

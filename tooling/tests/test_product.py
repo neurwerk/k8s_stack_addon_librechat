@@ -33,7 +33,7 @@ def test_installed_payload_stages_through_shared_helper(tmp_path, monkeypatch):
 @pytest.mark.parametrize(
     "stt,tts", [(False, False), (True, False), (False, True), (True, True)]
 )
-def test_speech_fields_and_waits_activate_independently(stt, tts):
+def test_speech_fields_and_deliveries_activate_independently(stt, tts):
     addon = load_manifest(ROOT / "release/manifest.yaml")
     selected = AddonSelection.model_validate(
         {
@@ -51,9 +51,11 @@ def test_speech_fields_and_waits_activate_independently(stt, tts):
     enabled = {direction for direction, active in (("stt", stt), ("tts", tts)) if active}
     assert (set(speech.fields) if speech else set()) == {f"{d}ApiKey" for d in enabled}
     assert {group.id for group in setup.input_groups} == enabled
-    waits = {target.name for target in setup.lifecycle.delivery}
+    deliveries = {delivery.name for delivery in setup.deliveries}
     for direction in ("stt", "tts"):
-        assert (f"frontend-librechat-{direction}-secret" in waits) == (direction in enabled)
+        assert (f"frontend-librechat-{direction}-secret" in deliveries) == (
+            direction in enabled
+        )
     assert not setup.handover
     snapshots = {}
     client = Mock(spec=client_module.OpenBaoClient)
