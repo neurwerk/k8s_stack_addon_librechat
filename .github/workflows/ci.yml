@@ -80,7 +80,9 @@ jobs:
             -v "$directory:/work/payloads" "$tooling" librechat-stage-permissions
           cmp "$directory/provision-permissions.cjs" tooling/src/librechat_tooling/payloads/provision-permissions.cjs
           test "$(stat -c '%a' "$directory/provision-permissions.cjs")" = 444
-          docker run --rm --platform linux/amd64 --network none --read-only --entrypoint node \
+          docker run --rm --platform linux/amd64 --network none --read-only --user 1000:1000 --entrypoint node \
             -v "$directory:/work/payloads:ro" "$native" --check /work/payloads/provision-permissions.cjs
-          docker run --rm --platform linux/amd64 --network none --read-only --entrypoint node \
+          # Native module imports initialize rotating logs even when the logger is silenced.
+          docker run --rm --platform linux/amd64 --network none --read-only --user 1000:1000 --entrypoint node \
+            --tmpfs /app/logs:rw,noexec,nosuid,nodev,size=16m,uid=1000,gid=1000,mode=0700 \
             "$native" -e 'const r=require("node:module").createRequire("/app/package.json"); const s=r("@librechat/data-schemas"); s.logger.silent=true; const a=r("@librechat/api"); const d=r("librechat-data-provider"); if(typeof r("mongoose").connect!=="function" || ![s.createModels,s.createMethods,s.scopedCacheKey,s.getTenantId,a.waitForKeyvRedisClient,a.standardCache].every(x=>typeof x==="function") || !d.CacheKeys.ROLES) process.exit(1);'
