@@ -39,6 +39,9 @@ jobs:
           PY
   quality:
     uses: ./.github/workflows/ci.yml
+    with:
+      # Publish the tooling artifact before alpha installation, not a stable product release.
+      base_ref: e5eca150c0f71d3f80b135c67f2451758a8f3db1
     permissions: {contents: read}
   build:
     needs: [validate, quality]
