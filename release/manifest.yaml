@@ -4,7 +4,7 @@ metadata:
   name: librechat
 spec:
   version: 0.1.7
-  status: staged
+  status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
   inputs:
