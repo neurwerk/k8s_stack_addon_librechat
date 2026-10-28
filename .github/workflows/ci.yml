@@ -72,13 +72,14 @@ jobs:
         run: |
           set -eu -o pipefail
           read -r tooling native < <(uv run --locked --project tooling python - <<'PY'
+          import tomllib
           from pathlib import Path
           from k8s_stack_tooling.addons import load_manifest
           artifacts = {a.id: a.image for a in load_manifest(Path("release/manifest.yaml")).spec.artifacts}
-          print(artifacts["tooling"], artifacts["application"])
+          version = tomllib.loads(Path("tooling/pyproject.toml").read_text())["project"]["version"]
+          print(artifacts["tooling"].split("@", 1)[0].rsplit(":", 1)[0] + ":" + version, artifacts["application"])
           PY
           )
-          tooling="${tooling%@*}"
           directory="$RUNNER_TEMP/librechat-payloads"
           mkdir -p "$directory"
           chmod 777 "$directory"
