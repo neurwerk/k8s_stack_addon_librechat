@@ -74,7 +74,7 @@ authKeycloak:
   agentgatewayClientRoles:
     - llm:invoke
     - model:remote/example/model:invoke
-    - provider:openai:company-use
+    - provider:openai:global-use
   smtp:
     enabled: true
     host: smtp.example.test
@@ -179,7 +179,7 @@ external-api-providers:
       providerId: openai
       provider: OpenAI
       upstreamURL: https://provider.lint.example
-      credentialSources: [company]
+      credentialSources: [global]
       authSecret: example-provider-key
       profiles: [openai-chat-completions-v1]
       models:

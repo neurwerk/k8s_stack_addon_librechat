@@ -61,7 +61,7 @@ class CatalogOwnershipTests(unittest.TestCase):
         self.assertTrue(next(spec for spec in self.config(values)["modelSpecs"]["list"]
                              if spec["name"] == "local/chat")["default"])
 
-    def test_ineligible_providers_cannot_satisfy_company_local_binding(self):
+    def test_ineligible_providers_cannot_satisfy_global_local_binding(self):
         for case in ("disabled", "api-disabled", "api-missing", "caller-only", "profile", "subscription", "external-none"):
             with self.subTest(case=case):
                 values = self.grouped_values()
@@ -73,7 +73,7 @@ class CatalogOwnershipTests(unittest.TestCase):
                 elif case == "api-missing":
                     provider.pop("routes")
                 elif case == "caller-only":
-                    provider["credentialSources"] = ["caller_supplied"]
+                    provider["credentialSources"] = ["override"]
                 elif case == "profile":
                     provider["profiles"] = ["openai-responses-v1"]
                 elif case == "subscription":
@@ -83,7 +83,16 @@ class CatalogOwnershipTests(unittest.TestCase):
                     provider["credentialSources"] = ["none"]
                 result = render("librechat/shared", values, check=False)
                 self.assertNotEqual(result.returncode, 0)
-                self.assertIn("requires an explicit company/local API binding", result.stderr)
+                self.assertIn("requires an explicit global/local API binding", result.stderr)
+
+    def test_legacy_sources_cannot_select_a_binding(self):
+        for sources in (["company"], ["caller_supplied"], ["global", "company"]):
+            with self.subTest(sources=sources):
+                values = self.grouped_values()
+                values["external-api-providers"][0]["credentialSources"] = sources
+                result = render("librechat/shared", values, check=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("credentialSources accepts only", result.stderr)
 
     def test_catalog_selection_still_has_exactly_one_owner(self):
         values = self.grouped_values()
