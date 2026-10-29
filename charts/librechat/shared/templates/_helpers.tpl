@@ -69,7 +69,10 @@ app.kubernetes.io/component: shared
 {{- range $group := list "self-hosted-api-providers" "external-api-providers" -}}
 {{- range $binding := index $.Values $group | default list -}}
 {{- $api := ($binding.routes | default dict).api | default dict -}}
-{{- if and $binding.enabled (eq (toJson $api.enabled) "true") (has "openai-chat-completions-v1" $binding.profiles) (or (has "global" $binding.credentialSources) (has "company" $binding.credentialSources) (and (eq $group "self-hosted-api-providers") (eq (toJson $binding.credentialSources) `["none"]`))) -}}
+{{- range $source := $binding.credentialSources -}}
+{{- if not (has $source (list "global" "override" "none")) }}{{ fail "binding credentialSources accepts only global, override or none" }}{{ end -}}
+{{- end -}}
+{{- if and $binding.enabled (eq (toJson $api.enabled) "true") (has "openai-chat-completions-v1" $binding.profiles) (or (has "global" $binding.credentialSources) (and (eq $group "self-hosted-api-providers") (eq (toJson $binding.credentialSources) `["none"]`))) -}}
 {{- $endpointName := printf "AgentGateway-%s" $binding.id -}}
 {{- if eq $binding.id $.Values.frontendLibrechat.agentGateway.primaryBinding }}{{ $endpointName = "AgentGateway" }}{{ end -}}
 {{- $selected := $binding.catalogModels | default list -}}
@@ -94,7 +97,7 @@ app.kubernetes.io/component: shared
 {{- end -}}
 {{- if and $defaultModel (not (hasKey $effectiveNames $defaultModel)) }}{{- fail (printf "frontendLibrechat.agentGateway.defaultModel %q is not in the effective model catalog" $defaultModel) }}{{- end -}}
 {{- range $spec := $specs -}}
-{{- if not (hasKey $modelEndpoints $spec.name) }}{{ fail (printf "LibreChat model %s requires an explicit company/local API binding" $spec.name) }}{{ end -}}
+{{- if not (hasKey $modelEndpoints $spec.name) }}{{ fail (printf "LibreChat model %s requires an explicit global/local API binding" $spec.name) }}{{ end -}}
 {{- $_ := set $spec.preset "endpoint" (get $modelEndpoints $spec.name) -}}
 {{- end -}}
 {{- dict "names" $names "specs" $specs "pricingModels" $pricingModels "modelEndpoints" $modelEndpoints "endpoints" $endpoints | toYaml -}}
