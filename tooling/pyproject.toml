@@ -1,6 +1,6 @@
 [project]
 name = "librechat-tooling"
-version = "0.1.7"
+version = "0.1.8"
 description = "LibreChat native permission provisioning resources"
 requires-python = ">=3.12"
 dependencies = ["k8s-stack-tooling==0.15.0"]

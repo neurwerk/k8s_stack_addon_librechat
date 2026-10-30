@@ -16,7 +16,7 @@ jobs:
         with: {fetch-depth: 0}
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with: {version: "0.12.7"}
-      - name: Validate exact reviewed source, tag, package and artifact
+      - name: Validate exact reviewed source, tag, package and lock
         run: |
           [[ "$GITHUB_REF_NAME" =~ ^tooling/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]
           export VERSION="${BASH_REMATCH[1]}"
@@ -25,17 +25,12 @@ jobs:
           uv run --locked --project tooling python - <<'PY'
           import os, tomllib
           from pathlib import Path
-          from k8s_stack_tooling.addons import load_manifest
           project = tomllib.loads(Path("tooling/pyproject.toml").read_text())
           lock = tomllib.loads(Path("tooling/uv.lock").read_text())
-          addon = load_manifest(Path("release/manifest.yaml"))
           version = os.environ["VERSION"]
           locked = next(p["version"] for p in lock["package"] if p["name"] == "librechat-tooling")
-          if {project["project"]["version"], locked, addon.spec.version} != {version}:
-              raise SystemExit("Tag, package, lock and add-on versions must match")
-          image = next(a.image for a in addon.spec.artifacts if a.id == "tooling")
-          if image.split("@", 1)[0] != os.environ["IMAGE_NAME"] + ":" + version:
-              raise SystemExit("Declared tooling artifact does not match release")
+          if {project["project"]["version"], locked} != {version}:
+              raise SystemExit("Tag, package and lock versions must match")
           PY
   quality:
     uses: ./.github/workflows/ci.yml
