@@ -3,7 +3,7 @@ kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.7
+  version: 0.1.8
   status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
@@ -85,7 +85,7 @@ spec:
         settings: librechat-oidc-settings
         approval: librechat-oidc-approval-values
   artifacts:
-    - {id: tooling, role: product, image: 'ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.7@sha256:b5bceb235a3133765d32a4b0a5f22253d2cd8d6a34bc1dbcf405e9c0051dc9a4'}
+    - {id: tooling, role: product, image: 'ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.8@sha256:9254cbce705eb312fa234e75741175e3878f4efb1673fdb3ab167220a183298b'}
     - {id: application, role: native, image: 'ghcr.io/librechat-ai/librechat:v0.8.8@sha256:5b706bcee1ca154a1e2987303aaeca0eb27f97919cccee4bb604226c2f8abf61'}
     - {id: admin-panel, role: native, image: 'ghcr.io/clickhouse/librechat-admin-panel:1.0.0@sha256:f889fb4fcec19ef90203cce11d66e8f34223d512957666a6a7c8967efb22a2de'}
     - {id: meilisearch, role: native, image: 'docker.io/getmeili/meilisearch:v1.35.1@sha256:8b57fc3c7f46535ddef3828df1538465ac19d892eb57c9a10da6df0880bd5856'}
