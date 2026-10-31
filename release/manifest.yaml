@@ -3,7 +3,7 @@ kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.8
+  version: 0.1.9
   status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
@@ -19,9 +19,9 @@ spec:
     - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-model-cost-catalog, owner: client}
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
-    base: 0.4.0
-    tooling: 0.15.0
-    stackSetup: 0.8.0
+    base: 0.3.30
+    tooling: 0.15.8
+    stackSetup: 0.8.4
     baseCharts:
       - charts/postgres/documentdb-addon
       - charts/keycloak/addon-access
