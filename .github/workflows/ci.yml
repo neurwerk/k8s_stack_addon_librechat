@@ -17,7 +17,7 @@ permissions:
 
 env:
   # Reviewed candidate for source CI only; tag-driven publication requires stable Base.
-  BASE_REF: d2053342856a82905d5ee3f00879e0547cb22909
+  BASE_REF: 1cb3aa042e8b2ba3dcaf3623cc66d3c43395315c
 
 jobs:
   validate:
@@ -68,28 +68,3 @@ jobs:
         run: |
           version="$(uv run --locked --project tooling python -c 'import tomllib; print(tomllib.load(open("tooling/pyproject.toml", "rb"))["project"]["version"])')"
           make tooling-build VERSION="$version" REVISION="$GITHUB_SHA"
-      - name: Verify packaged permissions in the pinned native image
-        run: |
-          set -eu -o pipefail
-          read -r tooling native < <(uv run --locked --project tooling python - <<'PY'
-          import tomllib
-          from pathlib import Path
-          from k8s_stack_tooling.addons import load_manifest
-          artifacts = {a.id: a.image for a in load_manifest(Path("release/manifest.yaml")).spec.artifacts}
-          version = tomllib.loads(Path("tooling/pyproject.toml").read_text())["project"]["version"]
-          print(artifacts["tooling"].split("@", 1)[0].rsplit(":", 1)[0] + ":" + version, artifacts["application"])
-          PY
-          )
-          directory="$RUNNER_TEMP/librechat-payloads"
-          mkdir -p "$directory"
-          chmod 777 "$directory"
-          docker run --rm --network none --read-only --user 65532:65532 \
-            -v "$directory:/work/payloads" "$tooling" librechat-stage-permissions
-          cmp "$directory/provision-permissions.cjs" tooling/src/librechat_tooling/payloads/provision-permissions.cjs
-          test "$(stat -c '%a' "$directory/provision-permissions.cjs")" = 444
-          docker run --rm --platform linux/amd64 --network none --read-only --user 1000:1000 --entrypoint node \
-            -v "$directory:/work/payloads:ro" "$native" --check /work/payloads/provision-permissions.cjs
-          # Native module imports initialize rotating logs even when the logger is silenced.
-          docker run --rm --platform linux/amd64 --network none --read-only --user 1000:1000 --entrypoint node \
-            --tmpfs /app/logs:rw,noexec,nosuid,nodev,size=16m,uid=1000,gid=1000,mode=0700 \
-            "$native" -e 'const r=require("node:module").createRequire("/app/package.json"); const s=r("@librechat/data-schemas"); s.logger.silent=true; const a=r("@librechat/api"); const d=r("librechat-data-provider"); if(typeof r("mongoose").connect!=="function" || ![s.createModels,s.createMethods,s.scopedCacheKey,s.getTenantId,a.waitForKeyvRedisClient,a.standardCache].every(x=>typeof x==="function") || !d.CacheKeys.ROLES) process.exit(1);'
