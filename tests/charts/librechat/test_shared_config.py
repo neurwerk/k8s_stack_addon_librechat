@@ -94,7 +94,6 @@ class SharedConfigTests(unittest.TestCase):
                 self.assertNotIn("oauth", server)
                 self.assertEqual(server["headers"], {
                     "Authorization": "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}",
-                    "X-Neurwerk-Credential-Mode": "none",
                 })
                 self.assertEqual(server["requestHeaders"], {
                     "X-Session-ID": "{{LIBRECHAT_BODY_CONVERSATIONID}}",

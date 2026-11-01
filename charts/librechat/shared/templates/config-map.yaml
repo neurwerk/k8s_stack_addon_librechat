@@ -236,7 +236,6 @@ data:
         requiresOAuth: false
         headers:
           Authorization: {{ printf "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}" | quote }}
-          X-Neurwerk-Credential-Mode: "none"
         requestHeaders:
           X-Session-ID: {{ printf "{{LIBRECHAT_BODY_CONVERSATIONID}}" | quote }}
       {{- end }}
