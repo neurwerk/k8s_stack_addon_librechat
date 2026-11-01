@@ -91,7 +91,7 @@ app.kubernetes.io/component: shared
 {{- if hasKey $modelEndpoints $name }}{{ fail "LibreChat models must belong to exactly one API binding" }}{{ end -}}
 {{- $_ := set $modelEndpoints $name $endpointName -}}
 {{- end -}}
-{{- if $selected }}{{ $endpoints = append $endpoints (dict "id" $binding.id "name" $endpointName "models" $selected "apiPath" ($api.path | default (printf "/bindings/%s" $binding.id))) }}{{ end -}}
+{{- if $selected }}{{ $endpoints = append $endpoints (dict "id" $binding.id "name" $endpointName "models" $selected "apiPath" ($api.path | default (printf "/bindings/%s" $binding.id)) "credentialMode" (ternary "none" "global" (eq (toJson $binding.credentialSources) `["none"]`))) }}{{ end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

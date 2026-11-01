@@ -216,6 +216,7 @@ data:
             disableStreaming: {{ not $.Values.frontendLibrechat.agentGateway.streaming }}
           headers:
             Authorization: {{ printf "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}" | quote }}
+            X-Neurwerk-Credential-Mode: {{ $endpoint.credentialMode | quote }}
             X-User-ID: {{ printf "{{LIBRECHAT_OPENID_USER_ID}}" | quote }}
             X-User-Email: {{ printf "{{LIBRECHAT_OPENID_USER_EMAIL}}" | quote }}
             X-Session-ID: {{ printf "{{LIBRECHAT_BODY_CONVERSATIONID}}" | quote }}
@@ -235,6 +236,7 @@ data:
         requiresOAuth: false
         headers:
           Authorization: {{ printf "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}" | quote }}
+          X-Neurwerk-Credential-Mode: "none"
         requestHeaders:
           X-Session-ID: {{ printf "{{LIBRECHAT_BODY_CONVERSATIONID}}" | quote }}
       {{- end }}

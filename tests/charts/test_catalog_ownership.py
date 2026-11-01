@@ -11,7 +11,7 @@ from helm import ROOT, render, resource
 class CatalogOwnershipTests(unittest.TestCase):
     def test_grouped_release_requires_exact_base_and_rejects_legacy_inputs(self):
         manifest = yaml.safe_load((ROOT / "release/manifest.yaml").read_text())
-        self.assertEqual(manifest["spec"]["prerequisites"]["base"], "0.3.30")
+        self.assertEqual(manifest["spec"]["prerequisites"]["base"], "0.3.31")
         for legacy, message in [
             ({"aiGateway": {"bindings": []}}, "aiGateway.bindings has been removed"),
             ({"mcp": {"enabled": False}}, "root mcp has been removed"),
@@ -39,20 +39,32 @@ class CatalogOwnershipTests(unittest.TestCase):
         values = self.grouped_values()
         provider = values["external-api-providers"][0]
         provider["routes"]["api"]["path"] = "/custom/api"
+        provider["credentialSources"] = ["global", "override"]
         local = copy.deepcopy(provider)
         local.update(id="local", provider="Custom", credentialSources=["none"],
                      models=[{"name": "local/chat", "upstreamModel": "local-upstream"}])
         local.pop("authSecret")
         local["routes"]["api"].pop("path")
-        values["self-hosted-api-providers"] = [local]
+        hosted = copy.deepcopy(local)
+        hosted.update(id="hosted", credentialSources=["global"],
+                      models=[{"name": "hosted/chat", "upstreamModel": "hosted-upstream"}])
+        values["self-hosted-api-providers"] = [local, hosted]
         config = self.config(values)
         endpoints = {entry["name"]: entry for entry in config["endpoints"]["custom"]}
         origin = values["frontendLibrechat"]["agentGateway"]["origin"]
         self.assertEqual(endpoints["AgentGateway"]["baseURL"], origin + "/custom/api/v1")
         self.assertEqual(endpoints["AgentGateway-local"]["baseURL"], origin + "/bindings/local/v1")
-        for endpoint, model in [("AgentGateway", "remote/example/model"), ("AgentGateway-local", "local/chat")]:
+        self.assertEqual(endpoints["AgentGateway-hosted"]["baseURL"], origin + "/bindings/hosted/v1")
+        for endpoint, model, mode in [
+            ("AgentGateway", "remote/example/model", "global"),
+            ("AgentGateway-local", "local/chat", "none"),
+            ("AgentGateway-hosted", "hosted/chat", "global"),
+        ]:
             self.assertEqual(endpoints[endpoint]["models"], {"default": [model], "fetch": False})
-            self.assertEqual(endpoints[endpoint]["headers"]["Authorization"], "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}")
+            headers = endpoints[endpoint]["headers"]
+            self.assertEqual(headers["Authorization"], "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}")
+            self.assertNotIn("X-Neurwerk-Authorization", headers)
+            self.assertEqual(headers["X-Neurwerk-Credential-Mode"], mode)
             self.assertEqual(endpoints[endpoint]["apiKey"], "unused")
         specs = {spec["name"]: spec for spec in config["modelSpecs"]["list"]}
         self.assertTrue(specs["remote/example/model"]["default"])
