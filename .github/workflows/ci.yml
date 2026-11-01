@@ -17,7 +17,7 @@ permissions:
 
 env:
   # Reviewed candidate for source CI only; tag-driven publication requires stable Base.
-  BASE_REF: 1cb3aa042e8b2ba3dcaf3623cc66d3c43395315c
+  BASE_REF: 0d2a31614776a1c85e693d9e6620849faa5b2e19
 
 jobs:
   validate:
