@@ -2,8 +2,8 @@ apiVersion: v2
 name: frontend-librechat-shared
 description: Shared runtime configuration and credentials for LibreChat components
 type: application
-version: 3.0.2
-appVersion: "v0.8.8"
+version: 3.0.3
+appVersion: "v0.8.9-rc1"
 annotations:
-  source.commit: e8f3be08623663d4ad7f7241e693c94469b63bb0
+  source.commit: 8d3da9bbb220a0a96be9330a2e1cbd385fb786d5
   source.repository: https://github.com/LibreChat-AI/LibreChat
