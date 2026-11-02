@@ -64,7 +64,7 @@ class CatalogOwnershipTests(unittest.TestCase):
             headers = endpoints[endpoint]["headers"]
             self.assertEqual(headers["Authorization"], "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}")
             self.assertNotIn("X-Neurwerk-Authorization", headers)
-            self.assertEqual(headers["X-Neurwerk-Credential-Mode"], mode)
+            self.assertNotIn("X-Neurwerk-Credential-Mode", headers)
             self.assertEqual(endpoints[endpoint]["apiKey"], "unused")
         specs = {spec["name"]: spec for spec in config["modelSpecs"]["list"]}
         self.assertTrue(specs["remote/example/model"]["default"])
