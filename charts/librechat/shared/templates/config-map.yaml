@@ -31,7 +31,7 @@ metadata:
     {{- include "frontend-librechat-shared.labels" . | nindent 4 }}
 data:
   librechat.yaml: |
-    version: 1.3.17
+    version: 1.3.18
     cache: true
     memory:
       disabled: {{ not $memory.enabled }}
