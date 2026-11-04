@@ -3,7 +3,7 @@ kind: AddonRelease
 metadata:
   name: librechat
 spec:
-  version: 0.1.11
+  version: 0.1.12
   status: ready
   sourceName: librechat-addon
   configurationKey: frontendLibrechat
@@ -19,7 +19,7 @@ spec:
     - {kind: ConfigMap, namespace: frontend-librechat, name: librechat-model-cost-catalog, owner: client}
     - {kind: ConfigMap, namespace: infra-cert-manager, name: client-values, owner: client}
   prerequisites:
-    base: 0.3.32
+    base: 0.3.33
     tooling: 0.16.0
     stackSetup: 0.8.5
     baseCharts:
@@ -85,7 +85,7 @@ spec:
         settings: librechat-oidc-settings
         approval: librechat-oidc-approval-values
   artifacts:
-    - {id: tooling, role: product, image: 'ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.8@sha256:9254cbce705eb312fa234e75741175e3878f4efb1673fdb3ab167220a183298b'}
+    - {id: tooling, role: product, image: 'ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.9@sha256:89cbd5ee3543af0a13721b13a00a81c74373a0c124ed36a5c4621c91b62d6080'}
     - {id: application, role: native, image: 'ghcr.io/librechat-ai/librechat:v0.8.9-rc1@sha256:26e3290c82002fd5e4d5e0fd8f7de4d2f2a430f12049d82190d1e4a80f2a3cb2'}
     - {id: admin-panel, role: native, image: 'ghcr.io/clickhouse/librechat-admin-panel:1.0.0@sha256:f889fb4fcec19ef90203cce11d66e8f34223d512957666a6a7c8967efb22a2de'}
     - {id: meilisearch, role: native, image: 'docker.io/getmeili/meilisearch:v1.35.1@sha256:8b57fc3c7f46535ddef3828df1538465ac19d892eb57c9a10da6df0880bd5856'}
