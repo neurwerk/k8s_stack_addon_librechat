@@ -10,6 +10,10 @@ apiVersion: policy.cert-manager.io/v1alpha1
 kind: CertificateRequestPolicy
 metadata:
   name: cert-manager-public-{{ $policy.name }}-{{ $issuer.suffix }}
+  labels:
+    app.kubernetes.io/name: librechat-certificate-approval
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: certificate-approval
 spec:
   allowed:
     dnsNames:
@@ -38,6 +42,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: cert-manager-public-librechat-use
+  labels:
+    app.kubernetes.io/name: librechat-certificate-approval
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: certificate-approval
 rules:
   - apiGroups: [policy.cert-manager.io]
     resources: [certificaterequestpolicies]
@@ -52,6 +60,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: cert-manager-public-librechat-use
+  labels:
+    app.kubernetes.io/name: librechat-certificate-approval
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: certificate-approval
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

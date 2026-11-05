@@ -43,6 +43,29 @@ def agent_capabilities(config: str) -> list[str]:
 class SharedConfigTests(unittest.TestCase):
     """Keep generated agent, reasoning, and MCP settings aligned."""
 
+    def test_chart_inputs_reject_truthy_strings_and_invalid_workload_numbers(self) -> None:
+        cases = (
+            ("app", "--set-string", "frontendLibrechat.rag.enabled=false", "rag", True, ()),
+            ("shared", "--set-string", "mcp-servers.enabled=false", "mcp-servers", True,
+             ("--set", "mcp-servers.catalog.presets.brave.enabled=true")),
+            ("shared", "--set-string", "external-api-providers[0].enabled=false",
+             "external-api-providers", True, ()),
+            ("admin-panel", "--set-string", "frontendLibrechat.adminPanel.serviceMonitor.enabled=false",
+             "serviceMonitor", True, ()),
+            ("certificate-approval", "--set-string", "frontendLibrechat.enabled=false",
+             "enabled", True, ()),
+            ("app", "--set-json", "frontendLibrechat.app.replicas=0.5", "replicas", False, ()),
+            ("app", "--set", "frontendLibrechat.app.service.port=0", "port", False, ()),
+        )
+        for chart, flag, value, field, boolean, extra in cases:
+            with self.subTest(chart=chart, value=value):
+                result = render_chart(chart, extra_args=(*extra, flag, value), check=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(result.stdout.strip(), "")
+                self.assertIn(field, result.stderr)
+                if boolean:
+                    self.assertIn("boolean", result.stderr)
+
     def test_runtime_keys_are_delivered_directly_without_helm_credentials(self) -> None:
         manifest = render_chart("shared", extra_args=(
             "--set-string", "frontendLibrechatSecrets.credsKey=synthetic-must-not-render",

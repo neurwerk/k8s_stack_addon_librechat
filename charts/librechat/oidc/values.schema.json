@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "frontendLibrechat": {"type": "object", "properties": {
+      "hostname": {"type": "string"},
+      "adminPanel": {"type": "object", "properties": {"hostname": {"type": "string"}}}
+    }},
+    "authKeycloak": {"type": "object", "properties": {
+      "librechatClientId": {"type": "string"},
+      "librechatRedirectUri": {"type": "string"},
+      "librechatWebOrigin": {"type": "string"},
+      "librechatAdminRedirectUri": {"type": "string"},
+      "librechatAdminWebOrigin": {"type": "string"},
+      "agentgatewayClientRoles": {"type": ["array", "null"], "items": {"type": "string"}}
+    }}
+  }
+}
