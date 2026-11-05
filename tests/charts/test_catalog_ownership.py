@@ -24,7 +24,7 @@ class CatalogOwnershipTests(unittest.TestCase):
     def config(self, values):
         result = render("librechat/shared", values, value_files=(
             ROOT / "tests/validation/helm-lint-values.yaml",
-            ROOT / "releases/shared/default-mcp-settings.yaml",
+            ROOT / "releases/librechat/shared/default-mcp-settings.yaml",
         ))
         return yaml.safe_load(resource(result, "ConfigMap", "frontend-librechat-config-map")["data"]["librechat.yaml"])
 
