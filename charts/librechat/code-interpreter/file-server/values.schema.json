@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "frontendLibrechatCodeInterpreter": {
+      "type": "object",
+      "properties": {
+        "fileServer": {
+          "type": "object",
+          "properties": {
+            "replicas": {"type": "integer", "minimum": 0},
+            "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+            "resources": {
+              "type": ["object", "null"],
+              "properties": {
+                "requests": {"type": ["object", "null"]},
+                "limits": {"type": ["object", "null"]}
+              }
+            }
+          }
+        },
+        "valkey": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}},
+        "objectStorage": {
+          "type": "object",
+          "properties": {
+            "useSSL": {"type": "boolean"},
+            "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+            "networkPolicy": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}}
+          }
+        }
+      }
+    }
+  }
+}

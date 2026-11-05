@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "resources": {
+      "type": ["object", "null"],
+      "properties": {
+        "requests": {"type": ["object", "null"]},
+        "limits": {"type": ["object", "null"]}
+      }
+    }
+  },
+  "properties": {
+    "frontendLibrechatCodeInterpreter": {
+      "type": "object",
+      "properties": {
+        "validation": {"type": "object", "properties": {"production": {"type": "boolean"}}},
+        "hardenedSandboxMode": {"type": "boolean"},
+        "worker": {
+          "type": "object",
+          "properties": {
+            "replicas": {"type": "integer", "minimum": 0},
+            "healthPort": {"type": "integer", "minimum": 1, "maximum": 65535},
+            "resources": {"$ref": "#/definitions/resources"}
+          }
+        },
+        "sandbox": {
+          "type": "object",
+          "properties": {
+            "replicas": {"type": "integer", "minimum": 0},
+            "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+            "perJobUids": {"type": "boolean"},
+            "resources": {"$ref": "#/definitions/resources"},
+            "waitForPackages": {
+              "type": ["object", "null"],
+              "properties": {"resources": {"$ref": "#/definitions/resources"}}
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "privileged": {"type": "boolean"},
+                "allowPrivilegeEscalation": {"type": "boolean"},
+                "seccomp": {"type": "object", "properties": {"enabled": {"type": "boolean"}}},
+                "appArmor": {"type": "object", "properties": {"enabled": {"type": "boolean"}}}
+              }
+            }
+          }
+        },
+        "valkey": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}},
+        "egressGateway": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}}
+      }
+    }
+  }
+}
