@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "secretRef": {"type": ["object", "null"], "properties": {
+      "secretName": {"type": "string"}, "key": {"type": "string"}
+    }}
+  },
+  "properties": {
+    "externalGateway": {"type": "object", "properties": {
+      "enabled": {"type": "boolean"}, "port": {"$ref": "#/definitions/port"}
+    }},
+    "publicCertificates": {"type": "object", "properties": {"useProduction": {"type": "boolean"}}},
+    "frontendLibrechat": {"type": "object", "properties": {
+      "hostname": {"type": "string"},
+      "adminPanel": {"type": "object", "properties": {
+        "hostname": {"type": "string"},
+        "replicas": {"type": "integer", "minimum": 0},
+        "ssoOnly": {"type": "boolean"},
+        "session": {"type": ["object", "null"], "properties": {"cookieSecure": {"type": "boolean"}}},
+        "serviceMonitor": {"type": ["object", "null"], "properties": {"enabled": {"type": "boolean"}}},
+        "ports": {"type": "object", "properties": {
+          "container": {"$ref": "#/definitions/port"}, "service": {"$ref": "#/definitions/port"}
+        }},
+        "resources": {"type": ["object", "null"], "properties": {
+          "requests": {"type": ["object", "null"]}, "limits": {"type": ["object", "null"]}
+        }},
+        "secret": {"type": ["object", "null"], "properties": {
+          "existingSecret": {"type": "string"},
+          "session": {"$ref": "#/definitions/secretRef"}, "metrics": {"$ref": "#/definitions/secretRef"}
+        }}
+      }}
+    }}
+  }
+}

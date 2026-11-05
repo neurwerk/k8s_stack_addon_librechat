@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "policyPort": {"anyOf": [{"$ref": "#/definitions/port"}, {"type": "string"}]},
+    "resources": {
+      "type": ["object", "null"],
+      "properties": {
+        "requests": {"type": ["object", "null"]},
+        "limits": {"type": ["object", "null"]}
+      }
+    },
+    "speech": {
+      "type": ["object", "null"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "auth": {"type": ["object", "null"], "properties": {"enabled": {"type": "boolean"}}}
+      }
+    }
+  },
+  "properties": {
+    "externalGateway": {"type": "object", "properties": {
+      "enabled": {"type": "boolean"}, "port": {"$ref": "#/definitions/port"}
+    }},
+    "publicCertificates": {"type": "object", "properties": {"useProduction": {"type": "boolean"}}},
+    "infraRookCeph": {"type": ["object", "null"], "properties": {
+      "objectStore": {"type": ["object", "null"], "properties": {"publicHostname": {"type": "string"}}}
+    }},
+    "frontendLibrechat": {
+      "type": "object",
+      "properties": {
+        "hostname": {"type": "string"},
+        "app": {"type": "object", "properties": {
+          "replicas": {"type": "integer", "minimum": 0},
+          "resources": {"$ref": "#/definitions/resources"},
+          "service": {"type": "object", "properties": {"port": {"$ref": "#/definitions/port"}}},
+          "permissions": {"type": ["object", "null"], "properties": {"resources": {"$ref": "#/definitions/resources"}}}
+        }},
+        "oidc": {"type": ["object", "null"], "properties": {
+          "startupGate": {"type": ["object", "null"], "properties": {"resources": {"$ref": "#/definitions/resources"}}}
+        }},
+        "codeInterpreter": {"type": ["object", "null"], "properties": {
+          "enabled": {"type": "boolean"}, "port": {"$ref": "#/definitions/policyPort"}
+        }},
+        "rag": {"type": ["object", "null"], "properties": {
+          "enabled": {"type": "boolean"}, "useFullContext": {"type": "boolean"},
+          "port": {"$ref": "#/definitions/policyPort"}
+        }},
+        "objectStorage": {"type": ["object", "null"], "properties": {
+          "enabled": {"type": "boolean"}, "forcePathStyle": {"type": "boolean"},
+          "endpoint": {"type": "string"}, "storageClassName": {"type": "string"}
+        }},
+        "speech": {"type": ["object", "null"], "properties": {
+          "stt": {"$ref": "#/definitions/speech"},
+          "tts": {"allOf": [{"$ref": "#/definitions/speech"}], "properties": {"allowExternal": {"type": "boolean"}}}
+        }},
+        "documentdb": {"type": ["object", "null"], "properties": {"port": {"$ref": "#/definitions/policyPort"}}},
+        "meilisearch": {"type": ["object", "null"], "properties": {"port": {"$ref": "#/definitions/policyPort"}}},
+        "valkey": {"type": ["object", "null"], "properties": {"port": {"$ref": "#/definitions/policyPort"}}},
+        "agentGateway": {"type": ["object", "null"], "properties": {"port": {"$ref": "#/definitions/policyPort"}}}
+      }
+    }
+  }
+}

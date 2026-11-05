@@ -1,14 +1,64 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "definitions": {
+    "flag": {"type": ["object", "null"], "properties": {"enabled": {"type": "boolean"}}},
+    "speech": {"type": ["object", "null"], "properties": {
+      "enabled": {"type": "boolean"}, "auth": {"$ref": "#/definitions/flag"}
+    }},
+    "provider": {"type": "object", "properties": {
+      "enabled": {"type": ["boolean", "null"]},
+      "routes": {"type": ["object", "null"], "properties": {
+        "api": {"type": ["object", "null"], "properties": {"enabled": {"type": ["boolean", "null"]}}}
+      }}
+    }}
+  },
   "properties": {
+    "openrouterCatalog": {"$ref": "#/definitions/flag"},
+    "mcp-servers": {"type": ["object", "null"], "properties": {
+      "enabled": {"type": "boolean"},
+      "catalog": {"type": ["object", "null"], "properties": {
+        "presets": {"type": ["object", "null"], "additionalProperties": {"$ref": "#/definitions/flag"}},
+        "custom": {"type": ["array", "null"], "items": {"$ref": "#/definitions/flag"}}
+      }}
+    }},
+    "self-hosted-api-providers": {"type": ["array", "null"], "items": {"$ref": "#/definitions/provider"}},
+    "external-api-providers": {"type": ["array", "null"], "items": {"$ref": "#/definitions/provider"}},
+    "guardrails": {"type": ["object", "null"], "properties": {
+      "llmPolicyEngine": {"type": ["object", "null"], "properties": {
+        "models": {"type": ["array", "null"], "items": {"type": "object", "properties": {"local": {"type": ["boolean", "null"]}}}}
+      }}
+    }},
     "frontendLibrechat": {
       "type": "object",
       "properties": {
+        "subagents": {"type": ["object", "null"], "properties": {
+          "enabled": {"type": "boolean"}, "fileSharing": {"$ref": "#/definitions/flag"}
+        }},
+        "costs": {"$ref": "#/definitions/flag"},
+        "documentAttachments": {"type": ["object", "null"], "properties": {
+          "enabled": {"type": "boolean"}, "imagesEnabled": {"type": "boolean"}
+        }},
+        "memory": {"type": ["object", "null"], "properties": {"enabled": {"type": "boolean"}}, "allOf": [{
+          "if": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]},
+          "then": {"properties": {"agent": {"$ref": "#/definitions/flag"}}}
+        }]},
+        "codeInterpreter": {"$ref": "#/definitions/flag"},
+        "rag": {"$ref": "#/definitions/flag"},
+        "objectStorage": {"$ref": "#/definitions/flag"},
+        "documentdb": {"type": ["object", "null"], "properties": {"directConnection": {"type": "boolean"}}},
+        "speech": {"type": ["object", "null"], "properties": {
+          "stt": {"allOf": [{"$ref": "#/definitions/speech"}, {
+            "if": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]},
+            "then": {"properties": {"autoTranscribeAudio": {"type": "boolean"}}}
+          }]},
+          "tts": {"allOf": [{"$ref": "#/definitions/speech"}], "properties": {"allowExternal": {"type": "boolean"}}}
+        }},
         "agentGateway": {
           "type": "object",
           "properties": {
-            "modelDiscovery": {"type": "boolean"}
+            "modelDiscovery": {"type": "boolean"},
+            "streaming": {"type": "boolean"}
           }
         }
       }
