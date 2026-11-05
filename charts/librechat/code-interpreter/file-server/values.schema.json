@@ -25,7 +25,17 @@
           "properties": {
             "useSSL": {"type": "boolean"},
             "port": {"type": "integer", "minimum": 1, "maximum": 65535},
-            "networkPolicy": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}}
+            "networkPolicy": {
+              "type": "object",
+              "properties": {
+                "port": {
+                  "anyOf": [
+                    {"type": "integer", "minimum": 1, "maximum": 65535},
+                    {"type": "string"}
+                  ]
+                }
+              }
+            }
           }
         }
       }
