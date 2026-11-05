@@ -694,6 +694,7 @@ dependencies = [
 dev = [
     { name = "openbao-stack-setup" },
     { name = "pytest" },
+    { name = "pyyaml" },
     { name = "ruff" },
     { name = "ty" },
 ]
@@ -705,6 +706,7 @@ requires-dist = [{ name = "k8s-stack-tooling", url = "https://github.com/neurwer
 dev = [
     { name = "openbao-stack-setup", url = "https://github.com/neurwerk/k8s_stack_tooling/releases/download/stack-setup-v0.8.5/openbao_stack_setup-0.8.5-py3-none-any.whl" },
     { name = "pytest", specifier = ">=8" },
+    { name = "pyyaml", specifier = ">=6.0,<7" },
     { name = "ruff", specifier = ">=0.15.17" },
     { name = "ty", specifier = ">=0.0.49" },
 ]
