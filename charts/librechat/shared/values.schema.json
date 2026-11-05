@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "frontendLibrechat": {
+      "type": "object",
+      "properties": {
+        "agentGateway": {
+          "type": "object",
+          "properties": {
+            "modelDiscovery": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,6 +3,7 @@
 {{- fail "canonicalEndpointRouting.mode must be internal-traefik or public-dns" -}}
 {{- end -}}
 {{- $modelCatalog := include "frontend-librechat-shared.modelCatalog" . | fromYaml -}}
+{{- $modelDiscovery := .Values.frontendLibrechat.agentGateway.modelDiscovery -}}
 {{- $mcpNames := include "frontend-librechat-shared.mcpNames" . | fromYamlArray -}}
 {{- $costTokenConfig := include "librechat.costTokenConfig" (dict "root" . "catalog" $modelCatalog) | fromYaml -}}
 {{- $speech := include "librechat.speechEndpoints" . | fromYaml -}}
@@ -147,18 +148,20 @@ data:
       # interface.agents/marketplace overrides would overwrite both roles.
       presets: false
       parameters: false
-      # Grouped model specs own selection; hide the duplicate raw endpoint row.
-      modelSelect: false
+      # Discovery uses the native per-user picker; static specs own other modes.
+      modelSelect: {{ $modelDiscovery }}
       fileSearch: {{ .Values.frontendLibrechat.rag.enabled }}
       {{- if $memory.enabled }}
       # Apply upstream memory permissions, including editing and the user off switch.
       memories: true
       {{- end }}
+    {{- if not $modelDiscovery }}
     modelSpecs:
       # Specs provide grouped rows while enforce:false preserves Agents models.
       enforce: false
       list:
         {{- $modelCatalog.specs | toYaml | nindent 8 }}
+    {{- end }}
     endpoints:
       allowedAddresses:
         - {{ .Values.frontendLibrechat.agentGateway.hostPort | quote }}
@@ -198,9 +201,16 @@ data:
             {{- $costTokenConfig | toYaml | nindent 12 }}
           {{- end }}
           models:
+            {{- if $modelDiscovery }}
+            # Upstream requires a nonempty fallback. This is not a gateway model;
+            # empty/error discovery must never fall back to the shared catalog.
+            default: ["No models available"]
+            fetch: true
+            {{- else }}
             # Keep request validation aligned with the grouped model specs.
             default: {{ $endpoint.models | toJson }}
             fetch: false
+            {{- end }}
           titleConvo: true
           titleModel: current_model
           titleTiming: final

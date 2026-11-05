@@ -4,7 +4,7 @@ SHELL := /bin/bash
 TOOLING := uv run --locked --project tooling
 TOOLING_IMAGE := ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling
 BASE_REPO ?=
-CHART_DIRS := $(sort $(shell find charts -name Chart.yaml -printf '%h\n'))
+CHART_DIRS := $(sort $(shell find charts -name Chart.yaml -exec dirname {} \;))
 
 .PHONY: check tooling-check tooling-build
 tooling-check:

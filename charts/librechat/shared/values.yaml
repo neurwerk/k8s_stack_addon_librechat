@@ -71,6 +71,9 @@ frontendLibrechat:
     primaryBinding: openrouter
     # Optional hard default applied to every new chat, regardless of prior selection.
     defaultModel: ""
+    # Fetch the user's permitted models using their OIDC token. Uses the native
+    # endpoint picker instead of static specs, including their hard default.
+    modelDiscovery: false
     streaming: false
   adminPanel:
     hostname: ""
