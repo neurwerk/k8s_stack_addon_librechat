@@ -114,7 +114,13 @@ spec:
     - metadata:
         name: data
         labels:
-          {{- include "librechat-code-interpreter-valkey.labels" . | nindent 10 }}
+          # Preserve the original labels: claim templates are immutable.
+          helm.sh/chart: librechat-code-interpreter-valkey-1.0.0
+          {{- include "librechat-code-interpreter-valkey.selectorLabels" . | nindent 10 }}
+          app.kubernetes.io/part-of: librechat-code-interpreter
+          app.kubernetes.io/component: valkey
+          app.kubernetes.io/version: "9.1.1"
+          app.kubernetes.io/managed-by: {{ .Release.Service }}
       spec:
         accessModes:
           - ReadWriteOnce

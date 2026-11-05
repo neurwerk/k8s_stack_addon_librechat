@@ -1,5 +1,6 @@
 {{- $product := .Values.frontendLibrechatCodeInterpreter -}}
 {{- $sandbox := $product.sandbox -}}
+{{- $waitForPackages := $sandbox.waitForPackages | default dict -}}
 {{- $name := include "librechat-code-interpreter-worker.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -44,12 +45,7 @@ spec:
             seccompProfile:
               type: RuntimeDefault
           resources:
-            requests:
-              cpu: 10m
-              memory: 32Mi
-            limits:
-              cpu: 100m
-              memory: 64Mi
+            {{- toYaml $waitForPackages.resources | nindent 12 }}
           volumeMounts:
             - name: packages
               mountPath: /host-packages

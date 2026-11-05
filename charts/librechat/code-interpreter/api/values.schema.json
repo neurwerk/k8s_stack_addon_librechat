@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "frontendLibrechatCodeInterpreter": {
+      "type": "object",
+      "properties": {
+        "hardenedSandboxMode": {"type": "boolean"},
+        "auth": {"type": "object", "properties": {"strictTenantIsolation": {"type": "boolean"}}},
+        "api": {
+          "type": "object",
+          "properties": {
+            "replicas": {"type": "integer", "minimum": 0},
+            "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+            "resources": {
+              "type": ["object", "null"],
+              "properties": {
+                "requests": {"type": ["object", "null"]},
+                "limits": {"type": ["object", "null"]}
+              }
+            }
+          }
+        },
+        "valkey": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}},
+        "fileServer": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}},
+        "toolCallServer": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}},
+        "egressGateway": {"type": "object", "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}}
+      }
+    }
+  }
+}

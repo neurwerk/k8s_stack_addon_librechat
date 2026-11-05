@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "frontendLibrechat": {
+      "type": "object",
+      "properties": {
+        "meilisearch": {
+          "type": "object",
+          "properties": {
+            "replicas": {"type": "integer", "minimum": 0},
+            "service": {
+              "type": "object",
+              "properties": {"port": {"type": "integer", "minimum": 1, "maximum": 65535}}
+            },
+            "resources": {
+              "type": ["object", "null"],
+              "properties": {
+                "requests": {"type": ["object", "null"]},
+                "limits": {"type": ["object", "null"]}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
