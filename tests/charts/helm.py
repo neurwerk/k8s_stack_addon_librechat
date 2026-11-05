@@ -1,7 +1,6 @@
 """Small offline Helm helpers shared by chart tests."""
 
 import json
-import re
 import subprocess
 from pathlib import Path
 
@@ -49,27 +48,3 @@ def resource(result, kind, name=None):
     if len(matches) != 1:
         raise AssertionError(f"Expected one {kind} {name}, found {len(matches)}")
     return matches[0]
-
-
-def resources(result, kind):
-    """Text resources for tests of embedded scripts and configuration."""
-    return [
-        doc
-        for doc in re.split(r"(?m)^---\s*$", result.stdout)
-        if re.search(rf"(?m)^kind:\s*{re.escape(kind)}\s*$", doc)
-    ]
-
-
-def env_value(result, name):
-    for doc in documents(result):
-        pod = doc.get("spec", {}).get("template", {}).get("spec", {})
-        for container in pod.get("containers", []) + pod.get("initContainers", []):
-            for item in container.get("env", []):
-                if item["name"] == name:
-                    return item["value"]
-    raise AssertionError(f"missing environment variable {name}")
-
-
-def values_from(path):
-    release = yaml.safe_load((ROOT / "releases" / path).read_text())
-    return [(item["kind"], item["name"]) for item in release["spec"]["valuesFrom"]]
