@@ -15,10 +15,10 @@ generatorOptions:
 configMapGenerator:
   - name: base-shared-hostnames-config-map
     files:
-      - values.yaml=../../shared/hostnames.yaml
+      - values.yaml=../shared/hostnames.yaml
   - name: base-shared-resources-config-map
     files:
-      - values.yaml=../../shared/resources.yaml
+      - values.yaml=../shared/resources.yaml
   - name: librechat-code-interpreter-app-defaults
     files:
-      - values.yaml=app-defaults.yaml
+      - values.yaml=values.yaml

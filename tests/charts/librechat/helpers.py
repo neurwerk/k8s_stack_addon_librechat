@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from helm import ROOT, LINT_VALUES, render
 
-RESOURCE_VALUES = ROOT / "releases/shared/resources.yaml"
+RESOURCE_VALUES = ROOT / "releases/librechat/shared/resources.yaml"
 
 
 def render_chart(
