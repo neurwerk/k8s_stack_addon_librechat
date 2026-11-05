@@ -15,5 +15,3 @@ frontendLibrechat:
       limits:
         cpu: 500m
         memory: 512Mi
-
-frontendLibrechatSecrets: {}

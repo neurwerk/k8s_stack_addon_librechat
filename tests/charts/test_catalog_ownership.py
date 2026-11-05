@@ -58,10 +58,10 @@ class CatalogOwnershipTests(unittest.TestCase):
         self.assertEqual(endpoints["AgentGateway"]["baseURL"], origin + "/custom/api/v1")
         self.assertEqual(endpoints["AgentGateway-local"]["baseURL"], origin + "/bindings/local/v1")
         self.assertEqual(endpoints["AgentGateway-hosted"]["baseURL"], origin + "/bindings/hosted/v1")
-        for endpoint, model, mode in [
-            ("AgentGateway", "remote/example/model", "global"),
-            ("AgentGateway-local", "local/chat", "none"),
-            ("AgentGateway-hosted", "hosted/chat", "global"),
+        for endpoint, model in [
+            ("AgentGateway", "remote/example/model"),
+            ("AgentGateway-local", "local/chat"),
+            ("AgentGateway-hosted", "hosted/chat"),
         ]:
             self.assertEqual(endpoints[endpoint]["models"], {"default": [model], "fetch": False})
             headers = endpoints[endpoint]["headers"]

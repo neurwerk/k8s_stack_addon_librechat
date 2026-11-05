@@ -122,13 +122,6 @@ frontendLibrechat:
   valkey:
     port: 6379
 
-frontendLibrechatSecrets: {}
-
-authKeycloak:
-  hostname: keycloak.example.invalid
-  librechatClientId: librechat
-  realm: example
-
 # Internal Traefik routing is the fail-closed default because canonical endpoint traffic should not require broad public egress.
 # Clients whose canonical endpoints resolve through public DNS must explicitly select public-dns.
 canonicalEndpointRouting:

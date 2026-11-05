@@ -75,17 +75,8 @@ frontendLibrechat:
     # endpoint picker instead of static specs, including their hard default.
     modelDiscovery: false
     streaming: false
-  adminPanel:
-    hostname: ""
-    url: ""
   codeInterpreter:
     enabled: false
-    url: http://librechat-code-interpreter-api:3112/v1
-    jwtAlgorithm: EdDSA
-    jwtAudience: codeapi
-    jwtIssuer: librechat
-    jwtKeyId: librechat-code-interpreter-v1
-    jwtSingleTenantId: librechat
   documentdb:
     host: postgres-operations.infra-postgres-operations.svc.cluster.local
     port: 10260
@@ -95,22 +86,10 @@ frontendLibrechat:
     directConnection: true
     tls:
       caFile: /etc/documentdb/ca.crt
-  meilisearch:
-    service:
-      name: frontend-librechat-meilisearch-service
-      port: 7700
   objectStorage:
     enabled: false
-  oidc:
-    adminRole: librechat-admin
-    buttonLabel: Sign in
-    requiredRole: librechat-user
   rag:
     enabled: false
-    useFullContext: false
-    service:
-      name: frontend-librechat-rag-api-service
-      port: 8000
   valkey:
     service:
       name: frontend-librechat-valkey-service
@@ -136,14 +115,12 @@ mcp-servers:
 
 self-hosted-api-providers: []
 external-api-providers: []
-external-subscription-providers: []
 
 # Selected client entries are injected through release values. Clients may also
 # add custom/local model shapes below.
 openrouterCatalog:
   enabled: true
   excludedModels: []
-  grantToAccessGroups: false
   models: []
 
 # Native AgentGateway catalog shape, imported from the optional namespace-local

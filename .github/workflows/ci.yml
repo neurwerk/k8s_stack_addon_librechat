@@ -52,10 +52,6 @@ jobs:
           uri: https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz
           name: kubeconform
           version: v0.8.0
-      - name: Read exact Base prerequisite
-        id: prerequisite
-        run: |
-          uv run --locked --project tooling python -c 'from pathlib import Path; from k8s_stack_tooling.addons import load_manifest; print("base=v" + load_manifest(Path("release/manifest.yaml")).spec.prerequisites.base)' >> "$GITHUB_OUTPUT"
       - name: Acquire selected Base release
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
