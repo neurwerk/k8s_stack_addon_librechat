@@ -100,5 +100,6 @@ app.kubernetes.io/component: shared
 {{- if not (hasKey $modelEndpoints $spec.name) }}{{ fail (printf "LibreChat model %s requires an explicit global/local API binding" $spec.name) }}{{ end -}}
 {{- $_ := set $spec.preset "endpoint" (get $modelEndpoints $spec.name) -}}
 {{- end -}}
+{{- if and .Values.frontendLibrechat.agentGateway.modelDiscovery (has "No models available" $names) }}{{ fail "No models available is reserved for the model discovery fallback" }}{{ end -}}
 {{- dict "names" $names "specs" $specs "pricingModels" $pricingModels "modelEndpoints" $modelEndpoints "endpoints" $endpoints | toYaml -}}
 {{- end -}}

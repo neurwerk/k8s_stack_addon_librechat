@@ -50,6 +50,9 @@ class CatalogOwnershipTests(unittest.TestCase):
                       models=[{"name": "hosted/chat", "upstreamModel": "hosted-upstream"}])
         values["self-hosted-api-providers"] = [local, hosted]
         config = self.config(values)
+        self.assertFalse(config["interface"]["modelSelect"])
+        values["frontendLibrechat"]["agentGateway"]["modelDiscovery"] = False
+        self.assertEqual(self.config(values), config)
         endpoints = {entry["name"]: entry for entry in config["endpoints"]["custom"]}
         origin = values["frontendLibrechat"]["agentGateway"]["origin"]
         self.assertEqual(endpoints["AgentGateway"]["baseURL"], origin + "/custom/api/v1")
@@ -72,6 +75,56 @@ class CatalogOwnershipTests(unittest.TestCase):
         values["frontendLibrechat"]["agentGateway"]["defaultModel"] = "local/chat"
         self.assertTrue(next(spec for spec in self.config(values)["modelSpecs"]["list"]
                              if spec["name"] == "local/chat")["default"])
+
+    def test_user_discovery_has_no_shared_picker_or_fallback(self):
+        values = self.grouped_values()
+        values["self-hosted-api-providers"] = [{
+            "id": "local", "enabled": True, "provider": "Custom",
+            "routes": {"api": {"enabled": True, "path": "/local/api"}},
+            "credentialSources": ["none"], "profiles": ["openai-chat-completions-v1"],
+            "models": [{"name": "local/chat", "upstreamModel": "local-upstream"}],
+        }]
+        values["frontendLibrechat"]["costs"] = {
+            "enabled": True,
+            "contextWindows": {"remote/example/model": 32768, "local/chat": 8192},
+        }
+        values["providers"] = {
+            "openai": {"models": {"example-model": {"rates": {"input": "1", "output": "2"}}}},
+            "custom": {"models": {"local-upstream": {"rates": {"input": "0", "output": "0"}}}},
+        }
+        static = self.config(values)
+        values["frontendLibrechat"]["agentGateway"]["modelDiscovery"] = True
+        config = self.config(values)
+        self.assertTrue(config["interface"]["modelSelect"])
+        self.assertNotIn("modelSpecs", config)
+        endpoints = {entry["name"]: entry for entry in config["endpoints"]["custom"]}
+        self.assertEqual(set(endpoints), {"AgentGateway", "AgentGateway-local"})
+        for original in static["endpoints"]["custom"]:
+            endpoint = endpoints[original["name"]]
+            self.assertEqual(endpoint["models"], {"fetch": True, "default": ["No models available"]})
+            self.assertFalse(set(endpoint["models"]["default"]) & set(original["models"]["default"]))
+            self.assertEqual(endpoint["headers"]["Authorization"], "Bearer {{LIBRECHAT_OPENID_ACCESS_TOKEN}}")
+            self.assertEqual(endpoint["baseURL"], original["baseURL"])
+            self.assertEqual(endpoint["tokenConfig"], original["tokenConfig"])
+            self.assertEqual(endpoint["tokenConfig"]["local/chat"]["context"], 8192)
+            self.assertEqual(endpoint["tokenConfig"]["remote/example/model"]["completion"], 2)
+
+    def test_discovery_placeholder_cannot_be_a_real_model(self):
+        values = self.grouped_values()
+        values["frontendLibrechat"]["agentGateway"].update(modelDiscovery=True, defaultModel="")
+        values["external-api-providers"][0]["models"][0]["name"] = "No models available"
+        values["guardrails"]["llmPolicyEngine"]["models"][0]["name"] = "No models available"
+        result = render("librechat/shared", values, check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reserved for the model discovery fallback", result.stderr)
+
+    def test_discovery_requires_a_boolean(self):
+        values = self.grouped_values()
+        values["frontendLibrechat"]["agentGateway"]["modelDiscovery"] = "false"
+        result = render("librechat/shared", values, check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("modelDiscovery", result.stderr)
+        self.assertIn("boolean", result.stderr)
 
     def test_ineligible_providers_cannot_satisfy_global_local_binding(self):
         for case in ("disabled", "api-disabled", "api-missing", "caller-only", "profile", "subscription", "external-none"):
