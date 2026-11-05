@@ -22,6 +22,9 @@ metadata:
   name: librechat-oidc-settings
   namespace: {{ .Release.Namespace }}
   labels:
+    app.kubernetes.io/name: librechat-oidc-settings
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: oidc
     reconcile.fluxcd.io/watch: Enabled
 data:
   values.yaml: |

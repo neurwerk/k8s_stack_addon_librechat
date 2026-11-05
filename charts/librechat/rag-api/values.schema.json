@@ -1,6 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
+  "definitions": {
+    "port": {"type": "integer", "minimum": 1, "maximum": 65535}
+  },
   "properties": {
     "frontendLibrechat": {
       "type": "object",
@@ -8,6 +11,15 @@
         "ragApi": {
           "type": "object",
           "properties": {
+            "replicas": {"type": "integer", "minimum": 0},
+            "resources": {"type": ["object", "null"], "properties": {
+              "requests": {"type": ["object", "null"]}, "limits": {"type": ["object", "null"]}
+            }},
+            "service": {"type": "object", "properties": {"port": {"$ref": "#/definitions/port"}}},
+            "database": {"type": ["object", "null"], "properties": {
+              "podPort": {"anyOf": [{"$ref": "#/definitions/port"}, {"type": "string"}]}
+            }},
+            "externalHttpsEgress": {"type": ["object", "null"], "properties": {"enabled": {"type": "boolean"}}},
             "image": {
               "type": "object",
               "properties": {

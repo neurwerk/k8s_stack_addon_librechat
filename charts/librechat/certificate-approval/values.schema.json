@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "frontendLibrechat": {"type": "object", "properties": {
+      "enabled": {"type": "boolean"}
+    }, "allOf": [{
+      "if": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]},
+      "then": {"properties": {
+        "hostname": {"type": "string"},
+        "adminPanel": {"type": "object", "properties": {"hostname": {"type": "string"}}}
+      }}
+    }]}
+  }
+}
