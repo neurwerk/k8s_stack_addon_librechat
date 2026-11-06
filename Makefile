@@ -18,6 +18,7 @@ tooling-build:
 	docker build --build-arg VERSION="$(VERSION)" --build-arg REVISION="$(REVISION)" -t "$(TOOLING_IMAGE):$(VERSION)" tooling
 
 check: tooling-check
+	uv lock --check
 	@test -n "$(BASE_REPO)" || { echo 'Set BASE_REPO to the exact selected Base checkout'; exit 1; }
 	$(TOOLING) addon-check "$(CURDIR)" --base "$(BASE_REPO)"
 	@for chart in $(CHART_DIRS); do \
