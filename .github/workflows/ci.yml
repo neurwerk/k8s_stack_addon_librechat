@@ -17,7 +17,7 @@ permissions:
 
 env:
   # Reviewed Base 0.3.34 release-preparation source.
-  BASE_REF: 3f517f697e3234dc589c7748b8f8b0b4524b9e44
+  BASE_REF: 0bd18849e3e959b36c690580c4ed053df0e6b4ad
 
 jobs:
   validate:

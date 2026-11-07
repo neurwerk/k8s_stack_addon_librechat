@@ -32,7 +32,7 @@ frontendLibrechat:
     streamDeltaCoalesceMs: 0
     replicas: 1
     permissions:
-      toolingImage: ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.9@sha256:89cbd5ee3543af0a13721b13a00a81c74373a0c124ed36a5c4621c91b62d6080
+      toolingImage: ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling:0.1.10@sha256:016f19e08768c168b046ec9f6301b2045df75271c0a3571970700b1526883a3d
       # Finite release gate; policy itself is platform-owned, not a client override.
       resources:
         requests:
