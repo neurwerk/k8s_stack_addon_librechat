@@ -1,0 +1,189 @@
+{
+  "source": "https://github.com/docling-project/docling",
+  "revision": "0563d23e004f403b61e181fe3a743be06894d52e",
+  "source_directory": "tests/data",
+  "license": "LICENSE",
+  "questions_source": {
+    "repository": "https://github.com/neurwerk/k8s_stack_tooling",
+    "revision": "0f03552b29dd5f8e09a44863ee3a02fd45146cb0",
+    "path": "cli_tools/docling_tester/src/docling_tester/questions.json",
+    "sha256": "880034c66daafed64c0ea2bffa91d1bf918fcea7934583d2d2d0e6e54f3c97c5",
+    "adaptations": "Selected questions are bundled in ../document_cases.json. Adapted wording and expected answer types are identified in source_evidence."
+  },
+  "files": [
+    {
+      "path": "ocr/sources/rotated_90_dense_text.png",
+      "purpose": "Image text recognition",
+      "bytes": 34985,
+      "sha256": "5caa528a47b964a8c67d6b1ad183b0487094fedd81c874d10e513470aeb544f6"
+    },
+    {
+      "path": "ocr/sources/rotated_180_dense_text.png",
+      "purpose": "Rotated OCR input",
+      "bytes": 40904,
+      "sha256": "e1afd045daf249b12053e055a42a1cc4b4ac9122eb9f17343713b8781980e912"
+    },
+    {
+      "path": "ocr/sources/rotated_270_dense_text.png",
+      "purpose": "Rotated OCR input",
+      "bytes": 34495,
+      "sha256": "216233fe54e927478f5e98752746df8d69d2148ad7ba96d3dd2840dff9722114"
+    },
+    {
+      "path": "ocr/sources/ocr_test.pdf",
+      "purpose": "Scanned PDF OCR",
+      "bytes": 93549,
+      "sha256": "73f23122e9edbdb0a115b448e03c8064a0ea8bdc21d02917ce220cf032454f31"
+    },
+    {
+      "path": "pdf/text_with_vector_rule.pdf",
+      "purpose": "Text PDF with vector graphics",
+      "bytes": 640,
+      "sha256": "4ab90294f8afa67e460ad84b7292de7b2c3a9d02bc4b67f1ede07a5e5df6d94a"
+    },
+    {
+      "path": "pdf/sources/normal_4pages.pdf",
+      "purpose": "Multi-page PDF",
+      "bytes": 359233,
+      "sha256": "ca9c83b1653221a66b30cdb543c1ef7b116827762ae65fca36b87b332532b51e"
+    },
+    {
+      "path": "docx/sources/lorem_ipsum.docx",
+      "purpose": "Word text",
+      "bytes": 14817,
+      "sha256": "bd261907c984c475b789761d31e6199fa594df0f2f79b702c9ca9e9c99042978"
+    },
+    {
+      "path": "docx/sources/word_tables.docx",
+      "purpose": "Word tables",
+      "bytes": 14247,
+      "sha256": "0d69a7ef0e1ba2b3142394ed708227b95cf37de037ee71f434853d30e3ca5a55"
+    },
+    {
+      "path": "xlsx/sources/xlsx_05_table_with_title.xlsx",
+      "purpose": "Spreadsheet table with title",
+      "bytes": 6335,
+      "sha256": "30afc0d53b0db289a45786ce4e9dc8f68bb91f256441cb55fb8e747fae104dbe"
+    },
+    {
+      "path": "csv/sources/csv-comma.csv",
+      "purpose": "Delimited table",
+      "bytes": 1005,
+      "sha256": "0f3643115a0a1d4b748b93ad9ab2a02ad1fde6a7a9506ce90422792e17244824"
+    },
+    {
+      "path": "pptx/sources/powerpoint_with_image.pptx",
+      "purpose": "Presentation with image",
+      "bytes": 79674,
+      "sha256": "fe03b865602a631bd7db627cc350866083e8a27d94796d2b12ae189b64fe09fd"
+    },
+    {
+      "path": "ocr/sources/sample_with_rotation_mismatch.pdf",
+      "purpose": "Scanned letter date with a rotation mismatch",
+      "bytes": 429779,
+      "sha256": "ceaa5e8218ca60ff366117a66bd1b6084e02fea903223a69eb63b479c2752757"
+    },
+    {
+      "path": "pdf/sources/2305.03393v1-pg9.pdf",
+      "purpose": "Merged PDF table headings and decimal lookup",
+      "bytes": 162131,
+      "sha256": "a07f5c34601ba2c234d898cbfaa9e29a7045996ccd82ccab3012516220a1f3a4"
+    },
+    {
+      "path": "docx/sources/docx_checkboxes.docx",
+      "purpose": "Checked versus unchecked breakfast choices",
+      "bytes": 16720,
+      "sha256": "eefaf5e8b4671cc7250d0b2d3c3f4b4c4f280439ef07910c55dac2e9d53e0969"
+    },
+    {
+      "path": "csv/sources/csv-comma-in-cell.csv",
+      "purpose": "Quoted delimiter inside a CSV cell",
+      "bytes": 45,
+      "sha256": "d909b337290c0af6663ec33b11b0495ec446fb1d71702c60f43c5955033e255e"
+    },
+    {
+      "path": "md/sources/blocks.md",
+      "purpose": "List numbering interrupted by prose",
+      "bytes": 753,
+      "sha256": "3608af8b7f0945d7f8edfb0b7c5827291e22d9f8d5870fdebac48203ba22d140"
+    },
+    {
+      "path": "ocr/sources/ocr_test_rotated_180.pdf",
+      "purpose": "Upside-down OCR with an ordered answer",
+      "bytes": 94703,
+      "sha256": "5e612719cff9ea5ab877d0ce6c1fae44f0b70ee15d4157e9231e6a5d5d7de906"
+    },
+    {
+      "path": "uspto/sources/pftaps057006474.txt",
+      "purpose": "Invention title in a plain-text patent record",
+      "bytes": 74336,
+      "sha256": "8b7af6630a455d1962726f4b26a40fffa2492d5bacef9834d0451f6a202b36c3"
+    },
+    {
+      "path": "html/sources/unit_test_01.html",
+      "purpose": "Nested HTML section headings",
+      "bytes": 198,
+      "sha256": "2bee0f7be87c382b776a1c09d60a5dad7c978431f48874e7a0a0613da9bedd90"
+    },
+    {
+      "path": "asciidoc/sources/asciidoc_04.asciidoc",
+      "purpose": "AsciiDoc code-to-name table lookup",
+      "bytes": 378,
+      "sha256": "dfa9467efdeb4bdf1c78012b3c4cf4d17457c38eb434ebb97499013a016840ae"
+    },
+    {
+      "path": "calendar/sources/google_export.ics",
+      "purpose": "Calendar location with escaped punctuation",
+      "bytes": 2796,
+      "sha256": "ac91146559a9b6789b212ebcfd8a0002ab706136b869d9f5b0265edf5272b48d"
+    },
+    {
+      "path": "email/sources/eml_with_attachment.eml",
+      "purpose": "Email body in a multipart message",
+      "bytes": 674,
+      "sha256": "7bd4d5aae2ff718cc0dc3bd8ee721df87668bb5aa9161911524337c3142764c6"
+    },
+    {
+      "path": "mhtml/sources/example.mhtml",
+      "purpose": "Quoted-printable HTML body",
+      "bytes": 1578,
+      "sha256": "0e0c61473aa4824b1590011e86e9436ef2692a361a7788948448b067ebcb7af7"
+    },
+    {
+      "path": "rtf/sources/legacy_sample.rtf",
+      "purpose": "Encoded accented RTF text",
+      "bytes": 321,
+      "sha256": "5898fda10c935ba1333722d66b11732e43a4d98296c5169d7a50238bd319f7ee"
+    },
+    {
+      "path": "latex/sources/example_01.tex",
+      "purpose": "LaTeX author metadata",
+      "bytes": 551,
+      "sha256": "b86b7ef9bd9131d6806ac16d59e0e496a8f5d4811b555cfbe4100674781cd28b"
+    },
+    {
+      "path": "webvtt/sources/webvtt_example_04.vtt",
+      "purpose": "Dialogue across subtitle cues",
+      "bytes": 406,
+      "sha256": "ce784cddc5c54944f3c8e706488bb640f62e95ddea1e21144acc53fbd2a4d21c"
+    },
+    {
+      "path": "boxnote/sources/sample.boxnote",
+      "purpose": "Top-level highlights versus a nested bullet",
+      "bytes": 5303,
+      "sha256": "1fa640489945df87d27595d78d3d2656219775f8765b07d0f5b0080067a53596"
+    },
+    {
+      "path": "jats/sources/pmc2231364.nxml",
+      "purpose": "Count in a JATS article",
+      "bytes": 3450,
+      "sha256": "7040e592d863b1cf9881b3c50b41e9d6d53e072bedbf7a2013c95bf845ff3c8c"
+    },
+    {
+      "path": "xlsx/sources/xlsx_02_sample_sales_data.xlsm",
+      "purpose": "XLSM product and date row lookup",
+      "bytes": 9945,
+      "sha256": "1626628446cc565c9f2e9ec6f77e1339bb5dbcf1090562a0cd7b342c717910d4"
+    }
+  ]
+}

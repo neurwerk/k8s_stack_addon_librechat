@@ -6,7 +6,12 @@ TOOLING_IMAGE := ghcr.io/neurwerk/k8s-stack-addon-librechat-tooling
 BASE_REPO ?=
 CHART_DIRS := $(sort $(shell find charts -name Chart.yaml -exec dirname {} \;))
 
-.PHONY: check tooling-check tooling-build
+.PHONY: check tooling-check tooling-build live-helper-check
+live-helper-check:
+	$(TOOLING) ruff check --config tooling/pyproject.toml tests/live
+	$(TOOLING) ruff format --check --config tooling/pyproject.toml tests/live
+	$(TOOLING) python -B -m unittest discover -s tests/live -p 'test_*.py' -v
+
 tooling-check:
 	$(TOOLING) ruff check --config tooling/pyproject.toml tooling
 	$(TOOLING) ruff format --check --config tooling/pyproject.toml tooling
@@ -17,7 +22,7 @@ tooling-build:
 	@test -n "$(VERSION)" -a -n "$(REVISION)" || { echo 'Set VERSION and REVISION for image metadata'; exit 1; }
 	docker build --build-arg VERSION="$(VERSION)" --build-arg REVISION="$(REVISION)" -t "$(TOOLING_IMAGE):$(VERSION)" tooling
 
-check: tooling-check
+check: tooling-check live-helper-check
 	uv lock --check
 	@test -n "$(BASE_REPO)" || { echo 'Set BASE_REPO to the exact selected Base checkout'; exit 1; }
 	$(TOOLING) addon-check "$(CURDIR)" --base "$(BASE_REPO)"
