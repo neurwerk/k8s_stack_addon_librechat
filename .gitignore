@@ -33,3 +33,6 @@ htmlcov/
 *~
 *.swp
 *.swo
+
+# Local live-test preferences
+/tests/live/settings.local.json

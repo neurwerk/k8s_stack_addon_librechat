@@ -1,0 +1,221 @@
+[
+  {
+    "identifier": "6.1",
+    "name": "Text PDF - sentence above a vector rule",
+    "path": "pdf/text_with_vector_rule.pdf",
+    "mime": "application/pdf",
+    "question": "What sentence appears above the horizontal rule? Use a string.",
+    "expected": "Programmatic text above a rule",
+    "source_evidence": "Original tests/data/pdf/text_with_vector_rule.pdf, page 1 direct PDF read returns Programmatic text above a rule."
+  },
+  {
+    "identifier": "6.2",
+    "name": "Scanned PDF - letter date with rotation mismatch",
+    "path": "ocr/sources/sample_with_rotation_mismatch.pdf",
+    "mime": "application/pdf",
+    "question": "What is the date of the scanned letter? Return a string in YYYY-MM-DD format.",
+    "expected": "1972-01-18",
+    "source_evidence": "Original tests/data/ocr/sources/sample_with_rotation_mismatch.pdf, page 1 letter: 18th January, 1972.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.3",
+    "name": "Tables - PDF merged headings and decimal value",
+    "path": "pdf/sources/2305.03393v1-pg9.pdf",
+    "mime": "application/pdf",
+    "question": "In Table 1, what is the OTSL inference time in seconds with six encoder and six decoder layers? Use a number.",
+    "expected": 2.73,
+    "source_evidence": "Original tests/data/pdf/sources/2305.03393v1-pg9.pdf, physical page 1 (printed page 9), Table 1: OTSL 6/6 inference time 2.73 seconds.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.4",
+    "name": "Office - DOCX checked versus unchecked drinks",
+    "path": "docx/sources/docx_checkboxes.docx",
+    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "question": "Which drinks are checked in the breakfast options? Return their labels in document order as an array of strings.",
+    "expected": ["Orange juice", "Coffee", "Water"],
+    "source_evidence": "Original word/document.xml checked-box glyphs precede Orange juice, Coffee and Water; Tea and Milk are unchecked.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.7",
+    "name": "DOCX - vertically merged table cells",
+    "path": "docx/sources/word_tables.docx",
+    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "question": "In the table labeled A non-uniform table with vertical spans, what text occupies the Header 0.1 column alongside Cell 2.0? Use a string.",
+    "expected": "Merged Cell 1.1 2.1",
+    "source_evidence": "Original document.xml vertical-span table middle cell spans beside Cell 1.0 and Cell 2.0; pinned Markdown repeats merged value.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.8",
+    "name": "XLSX - year lookup below a separate title",
+    "path": "xlsx/sources/xlsx_05_table_with_title.xlsx",
+    "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "question": "How many freshwater ducks are listed for 2023? Use an integer.",
+    "expected": 160,
+    "source_evidence": "Original xl/worksheets/sheet1.xml B9=2023,C9=160 below separate title B2.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.9",
+    "name": "CSV - quoted delimiter is a cell value",
+    "path": "csv/sources/csv-comma-in-cell.csv",
+    "mime": "text/csv",
+    "question": "In the second data row (excluding the numeric header), what is the value in column 2? Return the literal cell value as a string.",
+    "expected": ",",
+    "source_evidence": "Original CSV third physical line is a,\",\",c,d.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.10",
+    "name": "PPTX - second slide title beside an image",
+    "path": "pptx/sources/powerpoint_with_image.pptx",
+    "mime": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "question": "What is the exact title on the second slide? Use a string.",
+    "expected": "Picture placeholder",
+    "source_evidence": "Original ppt/slides/slide2.xml title and pinned Markdown above image.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.11",
+    "name": "Markdown - list numbering across a paragraph",
+    "path": "md/sources/blocks.md",
+    "mime": "text/markdown",
+    "question": "In the installation list split by a prose paragraph, what number labels the step 'Run the import.'? Use an integer.",
+    "expected": 3,
+    "source_evidence": "Original Markdown explicitly continues the list with 3. Run the import. after the shell-restart paragraph.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.12",
+    "name": "Rotated PDF - upside-down OCR and ordered answer",
+    "path": "ocr/sources/ocr_test_rotated_180.pdf",
+    "mime": "application/pdf",
+    "question": "Which two output formats does the sentence say Docling converts PDF documents to? Return an array of strings in the stated order.",
+    "expected": ["JSON", "Markdown"],
+    "source_evidence": "Original tests/data/ocr/sources/ocr_test_rotated_180.pdf, page 1 rotated text: PDF document conversion to JSON and Markdown.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.13",
+    "name": "Plain text - title inside a patent record",
+    "path": "uspto/sources/pftaps057006474.txt",
+    "mime": "text/plain",
+    "question": "What is the exact invention title stated in the patent's TTL field? Use a string.",
+    "expected": "Carbocation containing cyanine-type dye",
+    "source_evidence": "Original text record TTL field: Carbocation containing cyanine-type dye.",
+    "blocked": "Awaiting the four-way 6.1 live baseline"
+  },
+  {
+    "identifier": "6.14",
+    "name": "HTML - last nested section heading",
+    "path": "html/sources/unit_test_01.html",
+    "mime": "text/html",
+    "question": "What is the final section heading?",
+    "expected": "section-2.3",
+    "source_evidence": "Pinned html/groundtruth/unit_test_01.html.json #/texts/6: section-2.3.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.15",
+    "name": "AsciiDoc - table code lookup",
+    "path": "asciidoc/sources/asciidoc_04.asciidoc",
+    "mime": "text/asciidoc",
+    "question": "What name corresponds to code m?",
+    "expected": "Monospace",
+    "source_evidence": "Original source, Code/Name table: '| m | Monospace'.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.16",
+    "name": "Calendar - meeting room with escaped punctuation",
+    "path": "calendar/sources/google_export.ics",
+    "mime": "text/calendar",
+    "question": "Where does the Platform sync take place?",
+    "expected": "Room 4.12, Building B",
+    "source_evidence": "Pinned calendar/groundtruth/google_export.ics.json #/texts/7: Location: Room 4.12, Building B.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.17",
+    "name": "Email - body text in a multipart message",
+    "path": "email/sources/eml_with_attachment.eml",
+    "mime": "message/rfc822",
+    "question": "Quote the sentence in the email body that says an attachment is present. Use a string.",
+    "expected": "This email contains an attachment.",
+    "source_evidence": "Adapted from the tooling email case. Original eml_with_attachment.eml plain-text body, line 13: This email contains an attachment. This question does not prove exclusion of attachment contents.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.18",
+    "name": "MHTML - quoted-printable body text",
+    "path": "mhtml/sources/example.mhtml",
+    "mime": "multipart/related",
+    "question": "Complete the sentence 'Avoid use in ___.' Return only the missing word as a lowercase string.",
+    "expected": "operations",
+    "source_evidence": "Adapted from the tooling MHTML case to avoid paraphrase ambiguity. Original quoted-printable HTML body, line 23: Avoid use in operations.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.19",
+    "name": "RTF - encoded accented text",
+    "path": "rtf/sources/legacy_sample.rtf",
+    "mime": "application/rtf",
+    "question": "What accented word appears in the Unicode text example?",
+    "expected": "café",
+    "source_evidence": "Pinned rtf/groundtruth/legacy_sample.rtf.json #/texts/2: Unicode text: café.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.20",
+    "name": "LaTeX - author metadata",
+    "path": "latex/sources/example_01.tex",
+    "mime": "application/x-tex",
+    "question": "Who is the document's author?",
+    "expected": "Test Author",
+    "source_evidence": "Pinned latex/groundtruth/example_01.tex.json #/texts/2: Test Author.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.21",
+    "name": "WebVTT - dialogue across subtitle cues",
+    "path": "webvtt/sources/webvtt_example_04.vtt",
+    "mime": "text/vtt",
+    "question": "What dish did the waiter offer? Return its name as a lowercase string.",
+    "expected": "paella",
+    "source_evidence": "Adapted from the tooling WebVTT case to specify capitalization. Pinned webvtt/groundtruth/webvtt_example_04.vtt.json #/texts/1-4: The waiter offered a steaming bowl of paella.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.22",
+    "name": "BoxNote - top-level highlights versus nested detail",
+    "path": "boxnote/sources/sample.boxnote",
+    "mime": "application/json",
+    "question": "What are the two top-level bullet items under Highlights? Return their complete text in order as an array of strings, excluding nested bullet items.",
+    "expected": ["Faster conversion", "Fewer allocations"],
+    "source_evidence": "Adapted from the tooling BoxNote case to use an ordered array. Original sample.boxnote doc.content: Highlights bullet_list has Faster conversion and Fewer allocations; Nested detail is a sub-item.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.23",
+    "name": "JATS NXML - count inside an article",
+    "path": "jats/sources/pmc2231364.nxml",
+    "mime": "application/xml",
+    "question": "How many different stress conditions were analyzed?",
+    "expected": "25",
+    "source_evidence": "Pinned jats/groundtruth/pmc2231364.nxml.json #/texts/12: gene expression profiles of 25 different stress conditions.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  },
+  {
+    "identifier": "6.24",
+    "name": "XLSM - product and date row lookup",
+    "path": "xlsx/sources/xlsx_02_sample_sales_data.xlsm",
+    "mime": "application/vnd.ms-excel.sheet.macroEnabled.12",
+    "question": "What quantity is recorded for Widget A on January 1, 2024?",
+    "expected": "5",
+    "source_evidence": "Pinned xlsx/groundtruth/xlsx_02_sample_sales_data.xlsm.json #/tables/0/data/table_cells: Widget A | 2024-01-01 0:00:00 | 5 | 5000.",
+    "blocked": "Format-expansion runtime and LibreChat upload allowlist adoption unverified"
+  }
+]

@@ -1,0 +1,4 @@
+# Preserve the exact bytes of the pinned upstream fixture corpus.
+tests/live/data/docling/** binary
+tests/live/data/docling/manifest.json text diff
+tests/live/data/docling/LICENSE text diff
